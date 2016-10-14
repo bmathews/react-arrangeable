@@ -1,4 +1,4 @@
-WIP React resziable/draggable node system, used in spectacle-editor.
+WIP React resizable/draggable node system, used in spectacle-editor.
 
 Demo:
 http://nodes.surge.sh
