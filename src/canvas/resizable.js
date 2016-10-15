@@ -30,13 +30,35 @@ class Resizable extends Component {
   static defaultProps = {
     onResizeStart: () => {},
     onResizeStop: () => {}
-  }
+  };
 
   constructor(props) {
     super(props);
     this.state = {
+      modes: this.getModes(props.resizeHorizontal, props.resizeVertical),
       resizeMode: null
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { resizeHorizontal: rh, resizeVertical: rv } = this.props;
+    if (rh !== nextProps.resizeHorizontal || rv !== nextProps.resizeVertical) {
+      this.setState({ modes: this.getModes(nextProps.resizeHorizontal, nextProps.resizeVertical) });
+    }
+  }
+
+  getModes(resizeHorizontal, resizeVertical) {
+    const modes = [];
+    if (resizeHorizontal) {
+      modes.push("RIGHT", "LEFT");
+    }
+    if (resizeVertical) {
+      modes.push("TOP", "BOTTOM");
+    }
+    if (resizeVertical && resizeHorizontal) {
+      modes.push("TOP_LEFT", "TOP_RIGHT", "BOTTOM_RIGHT", "BOTTOM_LEFT");
+    }
+    return modes;
   }
 
   getEventCoordinates = (e) => ({
@@ -92,8 +114,7 @@ class Resizable extends Component {
   handleRotate = (e) => {
     const { left: canvasLeft, top: canvasTop } = this.canvasPosition;
     const { x: originX, y: originY } = this.rotateOrigin;
-    const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+    const { x: clientX, y: clientY } = this.getEventCoordinates(e);
     const x2 = clientX - (originX + canvasLeft);
     const y2 = (canvasTop + originY) - clientY;
     const degrees = Math.atan2(y2, x2) * (180 / Math.PI);
@@ -173,23 +194,10 @@ class Resizable extends Component {
   }
 
   render() {
-    const { children, resizeHorizontal, resizeVertical } = this.props;
-    const modes = [];
-
-    if (resizeHorizontal) {
-      modes.push("RIGHT", "LEFT");
-    }
-    if (resizeVertical) {
-      modes.push("TOP", "BOTTOM");
-    }
-    if (resizeVertical && resizeHorizontal) {
-      modes.push("TOP_LEFT", "TOP_RIGHT", "BOTTOM_RIGHT", "BOTTOM_LEFT");
-    }
-
     return (
       <div style={{ width: "100%", height: "100%", position: "relative" }}>
-        {children}
-        {this.getResizeNodes(modes)}
+        {this.props.children}
+        {this.getResizeNodes(this.state.modes)}
       </div>
     );
   }
