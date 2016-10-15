@@ -13,6 +13,17 @@ const alignPropMap ={
   BOTTOM_LEFT: "cornerBottomLeft"
 };
 
+const normalizedAngleMap ={
+  TOP: 90,
+  RIGHT: 0,
+  BOTTOM: -90,
+  LEFT: 180,
+  TOP_LEFT: 135,
+  TOP_RIGHT: 45,
+  BOTTOM_RIGHT: -45,
+  BOTTOM_LEFT: -135
+};
+
 class Resizable extends Component {
   static displayName = "Resizable";
 
@@ -22,6 +33,7 @@ class Resizable extends Component {
     onResize: PropTypes.func,
     onResizeStart: PropTypes.func,
     onResizeStop: PropTypes.func,
+    onRotate: PropTypes.func,
     resizeHorizontal: PropTypes.bool,
     resizeVertical: PropTypes.bool,
     scale: PropTypes.number.isRequired
@@ -90,12 +102,13 @@ class Resizable extends Component {
     this.setState({ resizeMode: null });
   }
 
-  startRotate = (e) => {
+  startRotate = (e, rotateMode) => {
     e.preventDefault();
     e.stopPropagation();
     this.startMousePosition = this.getEventCoordinates(e);
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.rotateOrigin = this.getNodeCenter();
+    this.rotateMode = rotateMode;
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);
     document.addEventListener("touchmove", this.handleRotate);
@@ -118,7 +131,7 @@ class Resizable extends Component {
     const x2 = clientX - (originX + canvasLeft);
     const y2 = (canvasTop + originY) - clientY;
     const degrees = Math.atan2(y2, x2) * (180 / Math.PI);
-    console.log("degrees", degrees);
+    this.props.onRotate(normalizedAngleMap[this.rotateMode] - degrees);
   }
 
   getNodeCenter = () => {

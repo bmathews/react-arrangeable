@@ -128,6 +128,14 @@ class App extends Component {
     this.setState({ selectedIndex: null })
   }
 
+  handleRotate = (degrees) => {
+    const { nodes, selectedIndex } = this.state;
+    const clonedNodes = JSON.parse(JSON.stringify(nodes));
+    const node = clonedNodes[selectedIndex];
+    node.rotation = degrees;
+    this.setState({ nodes: clonedNodes });
+  }
+
   renderSnapLine = (line, i) => {
     const width = line[1] === 0 ? CANVAS_WIDTH : 1;
     const height = line[1] === 1 ? CANVAS_HEIGHT : 1;
@@ -170,6 +178,7 @@ class App extends Component {
             onResize={this.handleResize}
             onResizeStart={this.handleResizeStart}
             onResizeStop={this.handleResizeStop}
+            onRotate={this.handleRotate}
             onDrag={this.handleDrag}
             onDragStart={this.handleDragStart}
             onDragStop={this.handleDragStop}

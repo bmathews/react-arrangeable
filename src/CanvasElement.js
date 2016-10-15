@@ -16,6 +16,7 @@ export const CanvasElementPropTypes = {
   onResize: PropTypes.func,
   onResizeStart: PropTypes.func,
   onResizeStop: PropTypes.func,
+  onRotate: PropTypes.func,
   resizeHorizontal: PropTypes.bool,
   resizeVertical: PropTypes.bool,
   scale: PropTypes.number.isRequired,
@@ -35,18 +36,30 @@ class CanvasElement extends Component {
       onResize,
       onResizeStart,
       onResizeStop,
+      onRotate,
       resizeHorizontal,
       resizeVertical,
       scale
     } = this.props;
-
     const sizeProps = { getSize, scale };
-    const resizeProps = { onResize, onResizeStart, onResizeStop, resizeHorizontal, resizeVertical };
-    const dragProps = { onDrag, onDragStart, onDragStop, draggable };
 
     return (
-      <Resizable {...sizeProps} {...resizeProps}>
-        <Draggable {...sizeProps} {...dragProps}>
+      <Resizable
+        {...sizeProps}
+        onResize={onResize}
+        onResizeStart={onResizeStart}
+        onResizeStop={onResizeStop}
+        onRotate={onRotate}
+        resizeHorizontal={resizeHorizontal}
+        resizeVertical={resizeVertical}
+      >
+        <Draggable
+          {...sizeProps}
+          onDrag={onDrag}
+          onDragStart={onDragStart}
+          onDragStop={onDragStop}
+          draggable={draggable}
+        >
           {children}
         </Draggable>
       </Resizable>
