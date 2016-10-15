@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import CanvasElement from './CanvasElement';
-import './App.css';
+import React, { Component } from "react";
+import CanvasElement from "./CanvasElement";
+import "./App.css";
 import * as constraints from "./canvas/constraints";
 import MODES from "./canvas/modes";
 
@@ -8,7 +8,6 @@ const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 500;
 
 class App extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -37,23 +36,25 @@ class App extends Component {
   }
 
   runConstraints = (e, originalSize, nextSize, mode) => {
+    const { nodes, scale, selectedIndex, snapLines } = this.state;
     let constrained = constraints.constrainWidthHeight(nextSize, 30, 30, mode);
-    const results = constraints.constrainGrid(constrained, this.state.snapLines, mode);
+    const results = constraints.constrainGrid(constrained, snapLines, mode);
     constrained = results.size;
+
     if (e.shiftKey && mode !== MODES.MOVE) {
       constrained = constraints.constrainRatio(originalSize, constrained, results.closest, mode);
     }
-    constrained = constraints.constrainCanvasBounds(constrained,
-                                                    CANVAS_WIDTH / this.state.scale,
-                                                    CANVAS_HEIGHT / this.state.scale,
-                                                    mode);
+
+    constrained = constraints.constrainCanvasBounds(
+      constrained,
+      CANVAS_WIDTH / scale,
+      CANVAS_HEIGHT / scale,
+      mode
+    );
 
     // intermediarySize is the in-process drag/resize size
-    const node = this.state.nodes[this.state.selectedIndex] ;
-    this.state.nodes[this.state.selectedIndex] = {
-      ...node,
-      ...constrained
-    };
+    const node = nodes[selectedIndex];
+    nodes[selectedIndex] = { ...node, ...constrained };
     this.setState({ activeSnapLines: results.lines });
   }
 
@@ -80,11 +81,18 @@ class App extends Component {
   }
 
   handleResizeStart = () => {
-    this.setState({ isResizing: true, snapLines: this.getSnapLines(), activeSnapLines: [] });
+    this.setState({
+      isResizing: true,
+      snapLines: this.getSnapLines(),
+      activeSnapLines: []
+    });
   }
 
   handleResizeStop = () => {
-    this.setState({ isResizing: false, activeSnapLines: [] });
+    this.setState({
+      isResizing: false,
+      activeSnapLines: []
+    });
   }
 
   handleDrag = (e, originalSize, nextSize, mode) => {
@@ -92,11 +100,18 @@ class App extends Component {
   }
 
   handleDragStart = () => {
-    this.setState({ isDragging: true, snapLines: this.getSnapLines(), activeSnapLines: [] });
+    this.setState({
+      isDragging: true,
+      snapLines: this.getSnapLines(),
+      activeSnapLines: []
+    });
   }
 
   handleDragStop = () => {
-    this.setState({ isDragging: false, activeSnapLines: [] });
+    this.setState({
+      isDragging: false,
+      activeSnapLines: []
+    });
   }
 
   handleMouseDown = (i, e) => {
@@ -114,26 +129,38 @@ class App extends Component {
     const top = line[1] === 0 ? line[0] : 0;
     const left = line[1] === 1 ? line[0] : 0;
     return (
-      <div key={idx} style={{width, height, top, left, backgroundColor: 'rgba(33,150,243,.2)', position: 'absolute'}} />
+      <div
+        key={idx}
+        style={{
+          width,
+          height,
+          top,
+          left,
+          backgroundColor: "rgba(33,150,243,.2)",
+          position: "absolute"
+        }}
+      />
     );
   }
 
   renderNodes = () => {
-    return this.state.nodes.map((n, i) => {
-      const isSelected = this.state.selectedIndex === i;
+    const { nodes, scale, selectedIndex, isResizing, isDragging } = this.state;
+    return nodes.map((n, i) => {
+      const isSelected = selectedIndex === i;
+      const { id, top, left, width, height, rotation } = n;
 
       return (
         <div
-          key={n.id}
+          key={id}
           onMouseDown={this.handleMouseDown.bind(null, i)}
-          className={`${isSelected ? 'selected' : ''} Node`}
-          style={{ top: n.top, left: n.left, width: n.width, height: n.height, transform: `rotateZ(${n.rotation}deg)` }}
+          className={`${isSelected ? "selected" : ""} Node`}
+          style={{ top, left, width, height, transform: `rotateZ(${rotation}deg)` }}
         >
           <CanvasElement
             getSize={() => n}
-            ref={(el) => { this.elementRefs[n.id] = el; }}
+            ref={(el) => { this.elementRefs[id] = el; }}
             elementIndex={i}
-            scale={this.state.scale}
+            scale={scale}
             onResize={this.handleResize}
             onResizeStart={this.handleResizeStart}
             onResizeStop={this.handleResizeStop}
@@ -141,15 +168,13 @@ class App extends Component {
             onDragStart={this.handleDragStart}
             onDragStop={this.handleDragStop}
             isSelected={isSelected}
-            isResizing={isSelected && this.state.isResizing}
-            isDragging={isSelected && this.state.isDragging}
-            resizeHorizontal={isSelected && !this.state.isDragging}
-            resizeVertical={isSelected && !this.state.isDragging}
-            canArrange={isSelected && !this.state.isResizing && !this.state.isDragging}
+            isResizing={isSelected && isResizing}
+            isDragging={isSelected && isDragging}
+            resizeHorizontal={isSelected && !isDragging}
+            resizeVertical={isSelected && !isDragging}
+            canArrange={isSelected && !isResizing && !isDragging}
             draggable
-          >
-
-          </CanvasElement>
+          />
         </div>
       );
     })
@@ -157,9 +182,13 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App" onMouseDown={this.handleBlur} onTouchStart={this.handleBlur}>
-        { this.renderNodes() }
-        { this.state.activeSnapLines.map(this.renderSnapLine) }
+      <div
+        id="app"
+        onMouseDown={this.handleBlur}
+        onTouchStart={this.handleBlur}
+      >
+        {this.renderNodes()}
+        {this.state.activeSnapLines.map(this.renderSnapLine)}
       </div>
     );
   }

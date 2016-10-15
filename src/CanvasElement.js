@@ -3,47 +3,51 @@ import Resizable from "./canvas/resizable";
 import Draggable from "./canvas/draggable";
 
 export const CanvasElementPropTypes = {
+  children: PropTypes.node,
+  draggable: PropTypes.bool,
+  getSize: PropTypes.func,
   onDrag: PropTypes.func,
   onDragStart: PropTypes.func,
   onDragStop: PropTypes.func,
+  isDragging: PropTypes.bool,
+  isPlaceholder: PropTypes.bool,
+  isResizing: PropTypes.bool,
+  isSelected: PropTypes.bool,
   onResize: PropTypes.func,
   onResizeStart: PropTypes.func,
   onResizeStop: PropTypes.func,
-  draggable: PropTypes.bool,
   resizeHorizontal: PropTypes.bool,
   resizeVertical: PropTypes.bool,
   scale: PropTypes.number.isRequired,
-  isDragging: PropTypes.bool,
-  isSelected: PropTypes.bool,
-  isResizing: PropTypes.bool,
-  isPlaceholder: PropTypes.bool,
-  getSize: PropTypes.func,
-  children: PropTypes.node
 };
 
 class CanvasElement extends Component {
-  static propTypes = CanvasElementPropTypes
+  static propTypes = CanvasElementPropTypes;
 
   render() {
+    const {
+      children,
+      draggable,
+      getSize,
+      onDrag,
+      onDragStart,
+      onDragStop,
+      onResize,
+      onResizeStart,
+      onResizeStop,
+      resizeHorizontal,
+      resizeVertical,
+      scale
+    } = this.props;
+
+    const sizeProps = { getSize, scale };
+    const resizeProps = { onResize, onResizeStart, onResizeStop, resizeHorizontal, resizeVertical };
+    const dragProps = { onDrag, onDragStart, onDragStop, draggable };
+
     return (
-      <Resizable
-        getSize={this.props.getSize}
-        onResize={this.props.onResize}
-        onResizeStart={this.props.onResizeStart}
-        onResizeStop={this.props.onResizeStop}
-        resizeHorizontal={this.props.resizeHorizontal}
-        resizeVertical={this.props.resizeVertical}
-        scale={this.props.scale}
-      >
-        <Draggable
-          getSize={this.props.getSize}
-          onDrag={this.props.onDrag}
-          onDragStart={this.props.onDragStart}
-          onDragStop={this.props.onDragStop}
-          draggable={this.props.draggable}
-          scale={this.props.scale}
-        >
-          {this.props.children}
+      <Resizable {...sizeProps} {...resizeProps}>
+        <Draggable {...sizeProps} {...dragProps}>
+          {children}
         </Draggable>
       </Resizable>
     );

@@ -3,34 +3,22 @@ import MODES from "./modes";
 const SNAP_DISTANCE = 15;
 
 const isVerticalResize = (mode) => (
-  mode !== MODES.LEFT &&
-  mode !== MODES.RIGHT &&
-  mode !== MODES.MOVE
+  mode !== MODES.LEFT && mode !== MODES.RIGHT && mode !== MODES.MOVE
 );
 const isLeftSideResize = (mode) => (
-  mode === MODES.LEFT ||
-  mode === MODES.TOP_LEFT ||
-  mode === MODES.BOTTOM_LEFT
+  mode === MODES.LEFT || mode === MODES.TOP_LEFT || mode === MODES.BOTTOM_LEFT
 );
 const isRightSideResize = (mode) => (
-  mode === MODES.RIGHT ||
-  mode === MODES.TOP_RIGHT ||
-  mode === MODES.BOTTOM_RIGHT
+  mode === MODES.RIGHT || mode === MODES.TOP_RIGHT || mode === MODES.BOTTOM_RIGHT
 );
 const isTopResize = (mode) => (
-  mode === MODES.TOP ||
-  mode === MODES.TOP_LEFT ||
-  mode === MODES.TOP_RIGHT
+  mode === MODES.TOP || mode === MODES.TOP_LEFT || mode === MODES.TOP_RIGHT
 );
 const isBottomResize = (mode) => (
-  mode === MODES.BOTTOM ||
-  mode === MODES.BOTTOM_LEFT ||
-  mode === MODES.BOTTOM_RIGHT
+  mode === MODES.BOTTOM || mode === MODES.BOTTOM_LEFT || mode === MODES.BOTTOM_RIGHT
 );
 const isHorizontalResize = (mode) => (
-  mode !== MODES.TOP &&
-  mode !== MODES.BOTTOM &&
-  mode !== MODES.MOVE
+  mode !== MODES.TOP && mode !== MODES.BOTTOM && mode !== MODES.MOVE
 );
 
 const resolveAdjustments = (targetSize, constrainedSize, mode) => {
@@ -189,7 +177,7 @@ export const constrainRatio = (originalSize, nextSize, snapResults, mode) => {
   const isVert = isVerticalResize(mode);
   const isHor = isHorizontalResize(mode);
 
-  if ((isHor && !isVert) || (isVert && !snapResults.horizontal || (snapResults.vertical && snapResults.horizontall && snapResults.vertical.distance < snapResults.horizontal.distance))) {
+  if ((isHor && !isVert) || ((isVert && !snapResults.horizontal) || (snapResults.vertical && snapResults.horizontall && snapResults.vertical.distance < snapResults.horizontal.distance))) {
     constrained.height = nextSize.width / ratio;
   } else {
     constrained.width = nextSize.height * ratio;
