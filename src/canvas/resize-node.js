@@ -3,70 +3,88 @@ import "./resize-node.css";
 
 export default class ResizeNode extends Component {
   static propTypes = {
-    mode: PropTypes.string,
     activeMode: PropTypes.string,
-    alignLeft: PropTypes.bool,
-    alignTop: PropTypes.bool,
     alignBottom: PropTypes.bool,
+    alignLeft: PropTypes.bool,
     alignRight: PropTypes.bool,
-    cornerTopLeft: PropTypes.bool,
-    cornerTopRight: PropTypes.bool,
+    alignTop: PropTypes.bool,
     cornerBottomLeft: PropTypes.bool,
     cornerBottomRight: PropTypes.bool,
+    cornerTopLeft: PropTypes.bool,
+    cornerTopRight: PropTypes.bool,
+    mode: PropTypes.string,
     onResize: PropTypes.func,
+    onRotate: PropTypes.func,
     scale: PropTypes.number
-  }
+  };
 
   renderCornerIcon(props) {
-    if (
-      !props.cornerTopLeft && !props.cornerTopRight &&
-      !props.cornerBottomLeft && !props.cornerBottomRight
-    ) {
-      return;
-    }
+    const { cornerTopLeft, cornerTopRight, cornerBottomRight, cornerBottomLeft } = props;
+    if (!cornerTopLeft && !cornerTopRight && !cornerBottomRight && !cornerBottomLeft) { return; }
 
-    const iconClass = [
-      props.cornerTopLeft && 'iconTopLeft',
-      props.cornerTopRight && 'iconTopRight',
-      props.cornerBottomLeft && 'iconBottomLeft',
-      props.cornerBottomRight && 'iconBottomRight'
+    const iconClassNames = [
+      cornerTopLeft && "iconTopLeft",
+      cornerTopRight && "iconTopRight",
+      cornerBottomLeft && "iconBottomLeft",
+      cornerBottomRight && "iconBottomRight"
     ].join(" ");
 
-    return (
-      <span
-        className={iconClass}
-        dangerouslySetInnerHTML={{ __html: '[]' }}
-      >
-      </span>
-    );
+    return <span className={iconClassNames} />;
   }
 
   handleResize = e => {
     this.props.onResize(e, this.props.mode);
   }
 
+  handleRotate = e => {
+    this.props.onRotate(e, this.props.mode);
+  }
+
   render() {
+    const {
+      activeMode,
+      alignTop,
+      alignRight,
+      alignBottom,
+      alignLeft,
+      cornerTopLeft,
+      cornerTopRight,
+      cornerBottomRight,
+      cornerBottomLeft,
+      mode,
+      scale
+    } = this.props;
+
     const resolvedClassNames = [
-      'handle',
-      this.props.alignTop && 'handleTop',
-      this.props.alignBottom && 'handleBottom',
-      this.props.alignLeft && 'handleLeft',
-      this.props.alignRight && 'handleRight',
-      this.props.cornerTopLeft && 'cornerTopLeft',
-      this.props.cornerTopRight && 'cornerTopRight',
-      this.props.cornerBottomLeft && 'cornerBottomLeft',
-      this.props.cornerBottomRight && 'cornerBottomRight'
+      "handle",
+      alignTop && "handleTop",
+      alignBottom && "handleBottom",
+      alignLeft && "handleLeft",
+      alignRight && "handleRight",
+      cornerTopLeft && "cornerTopLeft",
+      cornerTopRight && "cornerTopRight",
+      cornerBottomLeft && "cornerBottomLeft",
+      cornerBottomRight && "cornerBottomRight"
     ].join(" ");
 
-    if (this.props.activeMode && this.props.activeMode !== this.props.mode) return null;
+    if (activeMode && activeMode !== mode) return null;
 
     return (
       <div
-        style={{ transform: `scale(${1 / this.props.scale})` }}
         className={resolvedClassNames}
-        onMouseDown={this.handleResize}
-        onTouchStart={this.handleResize}
+        onMouseDown={this.handleRotate}
+        onTouchStart={this.handleRotate}
+        style={{
+          backgroundColor: "pink",
+          padding: 16,
+          transform: `scale(${1 / scale})`,
+        }}
       >
+        <div
+          className="resizeNode"
+          onMouseDown={this.handleResize}
+          onTouchStart={this.handleResize}
+        />
       </div>
     );
   }
