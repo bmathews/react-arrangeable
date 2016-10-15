@@ -2,18 +2,30 @@ import React, { Component, PropTypes } from "react";
 import ResizeNode from "./resize-node";
 import MODES from "./modes";
 
+const alignPropMap ={
+  TOP: "alignTop",
+  RIGHT: "alignRight",
+  BOTTOM: "alignBottom",
+  LEFT: "alignLeft",
+  TOP_LEFT: "cornerTopLeft",
+  TOP_RIGHT: "cornerTopRight",
+  BOTTOM_RIGHT: "cornerBottomRight",
+  BOTTOM_LEFT: "cornerBottomLeft"
+};
+
 class Resizable extends Component {
   static displayName = "Resizable";
+
   static propTypes = {
-    resizeHorizontal: PropTypes.bool,
-    resizeVertical: PropTypes.bool,
-    scale: PropTypes.number.isRequired,
+    children: PropTypes.node,
+    getSize: PropTypes.func,
     onResize: PropTypes.func,
     onResizeStart: PropTypes.func,
     onResizeStop: PropTypes.func,
-    getSize: PropTypes.func,
-    children: PropTypes.node
-  }
+    resizeHorizontal: PropTypes.bool,
+    resizeVertical: PropTypes.bool,
+    scale: PropTypes.number.isRequired
+  };
 
   static defaultProps = {
     onResizeStart: () => {},
@@ -32,10 +44,6 @@ class Resizable extends Component {
     y: e.touches ? e.touches[0].clientY : e.clientY
   })
 
-  /*
-   * Begin resizing with a particular mode
-   */
-
   startResize = (e, resizeMode) => {
     e.preventDefault();
     e.stopPropagation();
@@ -49,10 +57,6 @@ class Resizable extends Component {
     this.setState({ resizeMode });
   }
 
-  /*
-   * Stop resizing
-   */
-
   stopResize = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -64,23 +68,59 @@ class Resizable extends Component {
     this.setState({ resizeMode: null });
   }
 
-  /*
-   * Handle the mouse move. Calculate new target position
-   */
+  startRotate = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.startMousePosition = this.getEventCoordinates(e);
+    this.canvasPosition = document.getElementById("app").getBoundingClientRect();
+    this.rotateOrigin = this.getNodeCenter();
+    document.addEventListener("mousemove", this.handleRotate);
+    document.addEventListener("mouseup", this.stopRotate);
+    document.addEventListener("touchmove", this.handleRotate);
+    document.addEventListener("touchend", this.stopRotate);
+  }
+
+  stopRotate = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    document.removeEventListener("mousemove", this.handleRotate);
+    document.removeEventListener("mouseup", this.stopRotate);
+    document.removeEventListener("touchmove", this.handleRotate);
+    document.removeEventListener("touchend", this.stopRotate);
+  }
+
+  handleRotate = (e) => {
+    const { left: canvasLeft, top: canvasTop } = this.canvasPosition;
+    const { x: originX, y: originY } = this.rotateOrigin;
+    const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+    const x2 = clientX - (originX + canvasLeft);
+    const y2 = (canvasTop + originY) - clientY;
+    const degrees = Math.atan2(y2, x2) * (180 / Math.PI);
+    console.log("degrees", degrees);
+  }
+
+  getNodeCenter = () => {
+    const { left, top, width, height } = this.props.getSize();
+    return {
+      x: left + width / 2,
+      y: top + height / 2
+    };
+  }
 
   handleMouseMove = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
+    const { resizeMode } = this.state;
+    const { scale } = this.props;
+
     const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
 
     // Determine whether we can resize horizontally and vertically
-    const resizingHorizontally = this.state.resizeMode !== MODES.TOP &&
-                                 this.state.resizeMode !== MODES.BOTTOM;
-
-    const resizingVertically = this.state.resizeMode !== MODES.LEFT &&
-                               this.state.resizeMode !== MODES.RIGHT;
+    const resizingHorizontally = resizeMode !== MODES.TOP && resizeMode !== MODES.BOTTOM;
+    const resizingVertically = resizeMode !== MODES.LEFT && resizeMode !== MODES.RIGHT;
 
     // Capture deltas for top/left/width/height
     const targetSize = {
@@ -89,76 +129,69 @@ class Resizable extends Component {
 
     // Determine horizontal deltas
     if (resizingHorizontally) {
-      if (this.state.resizeMode === MODES.TOP_LEFT ||
-          this.state.resizeMode === MODES.LEFT ||
-          this.state.resizeMode === MODES.BOTTOM_LEFT) {
-        targetSize.left += (clientX - this.startMousePosition.x) / this.props.scale;
-        targetSize.width -= (clientX - this.startMousePosition.x) / this.props.scale;
+      if ([MODES.TOP_LEFT, MODES.LEFT, MODES.BOTTOM_LEFT].indexOf(resizeMode) > -1) {
+        targetSize.left += (clientX - this.startMousePosition.x) / scale;
+        targetSize.width -= (clientX - this.startMousePosition.x) / scale;
       } else {
-        targetSize.width += (clientX - this.startMousePosition.x) / this.props.scale;
-        targetSize.top += ((clientX - this.startMousePosition.x) / this.props.scale) / 12;
+        targetSize.width += (clientX - this.startMousePosition.x) / scale;
       }
     }
 
     // Determine vertical deltas
     if (resizingVertically) {
-      if (this.state.resizeMode === MODES.TOP_LEFT ||
-          this.state.resizeMode === MODES.TOP ||
-          this.state.resizeMode === MODES.TOP_RIGHT) {
-        targetSize.top += (clientY - this.startMousePosition.y) / this.props.scale;
-        targetSize.height -= (clientY - this.startMousePosition.y) / this.props.scale;
+      if ([MODES.TOP_LEFT, MODES.TOP, MODES.TOP_RIGHT].indexOf(resizeMode) > -1) {
+        targetSize.top += (clientY - this.startMousePosition.y) / scale;
+        targetSize.height -= (clientY - this.startMousePosition.y) / scale;
       } else {
-        targetSize.height += (clientY - this.startMousePosition.y) / this.props.scale;
+        targetSize.height += (clientY - this.startMousePosition.y) / scale;
       }
     }
 
     this.resizeTo(e, targetSize);
   }
 
-  /*
-   * Attempt a resize to a position
-   */
-
   resizeTo(e, rect) {
     this.props.onResize(e, this.sizeAtStart, rect, this.state.resizeMode);
   }
 
-  /*
-   * Render
-   */
+  getResizeNodes = (nodeModes) => {
+    return nodeModes.map((nodeMode) => {
+      const mode = MODES[nodeMode];
+      const alignProp = { [alignPropMap[mode]]: true };
+      return (
+        <ResizeNode
+          {...alignProp}
+          key={mode}
+          mode={mode}
+          activeMode={this.state.resizeMode}
+          onResize={this.startResize}
+          onRotate={this.startRotate}
+          scale={this.props.scale}
+        />
+      );
+    });
+  }
 
   render() {
-    /* eslint-disable max-len */
-    let resizeNodes = [];
+    const { children, resizeHorizontal, resizeVertical } = this.props;
+    const modes = [];
 
-    if (this.props.resizeHorizontal) {
-      resizeNodes = resizeNodes.concat([
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.RIGHT} mode={MODES.RIGHT} alignRight onResize={this.startResize} />,
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.LEFT} mode={MODES.LEFT} alignLeft onResize={this.startResize} />
-      ]);
+    if (resizeHorizontal) {
+      modes.push("RIGHT", "LEFT");
     }
-    if (this.props.resizeVertical) {
-      resizeNodes = resizeNodes.concat([
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.TOP} mode={MODES.TOP} alignTop onResize={this.startResize} />,
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.BOTTOM} mode={MODES.BOTTOM} alignBottom onResize={this.startResize} />
-      ]);
+    if (resizeVertical) {
+      modes.push("TOP", "BOTTOM");
     }
-    if (this.props.resizeVertical && this.props.resizeHorizontal) {
-      resizeNodes = resizeNodes.concat([
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.TOP_LEFT} mode={MODES.TOP_LEFT} cornerTopLeft onResize={this.startResize} />,
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.TOP_RIGHT} mode={MODES.TOP_RIGHT} cornerTopRight onResize={this.startResize} />,
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.BOTTOM_RIGHT} mode={MODES.BOTTOM_RIGHT} cornerBottomRight onResize={this.startResize} />,
-        <ResizeNode scale={this.props.scale} activeMode={this.state.resizeMode} key={MODES.BOTTOM_LEFT} mode={MODES.BOTTOM_LEFT} cornerBottomLeft onResize={this.startResize} />
-      ]);
+    if (resizeVertical && resizeHorizontal) {
+      modes.push("TOP_LEFT", "TOP_RIGHT", "BOTTOM_RIGHT", "BOTTOM_LEFT");
     }
 
     return (
-      <div style={{ width: '100%', height: '100%' }}>
-        {this.props.children}
-        {resizeNodes}
+      <div style={{ width: "100%", height: "100%", position: "relative" }}>
+        {children}
+        {this.getResizeNodes(modes)}
       </div>
     );
-    /* eslint-enable max-len */
   }
 }
 
