@@ -17,7 +17,7 @@ class App extends Component {
         top: 20,
         width: 300,
         height: 300,
-        rotation: 10
+        rotation: 0
       }, {
         id: 2,
         left: 320,
@@ -52,25 +52,30 @@ class App extends Component {
       mode
     );
 
-    // intermediarySize is the in-process drag/resize size
-    const node = nodes[selectedIndex];
-    nodes[selectedIndex] = { ...node, ...constrained };
-    this.setState({ activeSnapLines: results.lines });
+    const clonedNodes = JSON.parse(JSON.stringify(nodes));
+    const node = clonedNodes[selectedIndex];
+    clonedNodes[selectedIndex] = { ...node, ...constrained };
+
+    this.setState({
+      activeSnapLines: results.lines,
+      nodes: clonedNodes
+    });
   }
 
   getSnapLines = () => {
+    const { nodes, selectedIndex, scale } = this.state;
     const rects = [];
 
-    this.state.nodes.forEach((n, idx) => {
-      if (idx === this.state.selectedIndex) return;
+    nodes.forEach((n, i) => {
+      if (i === selectedIndex) return;
       rects.push(n);
     });
 
     const lines = constraints.rectToSnapLines({
       top: 0,
       left: 0,
-      width: CANVAS_WIDTH / this.state.scale,
-      height: CANVAS_HEIGHT / this.state.scale
+      width: CANVAS_WIDTH / scale,
+      height: CANVAS_HEIGHT / scale
     });
 
     return lines.concat(constraints.rectsToSnapLines(rects));
@@ -123,14 +128,14 @@ class App extends Component {
     this.setState({ selectedIndex: null })
   }
 
-  renderSnapLine = (line, idx) => {
+  renderSnapLine = (line, i) => {
     const width = line[1] === 0 ? CANVAS_WIDTH : 1;
     const height = line[1] === 1 ? CANVAS_HEIGHT : 1;
     const top = line[1] === 0 ? line[0] : 0;
     const left = line[1] === 1 ? line[0] : 0;
     return (
       <div
-        key={idx}
+        key={i}
         style={{
           width,
           height,
@@ -145,6 +150,7 @@ class App extends Component {
 
   renderNodes = () => {
     const { nodes, scale, selectedIndex, isResizing, isDragging } = this.state;
+
     return nodes.map((n, i) => {
       const isSelected = selectedIndex === i;
       const { id, top, left, width, height, rotation } = n;
