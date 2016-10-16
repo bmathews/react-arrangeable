@@ -13,15 +13,16 @@ const alignPropMap ={
   BOTTOM_LEFT: "cornerBottomLeft"
 };
 
+const PI = Math.PI;
 const normalizedAngleMap ={
-  TOP: 90,
+  TOP: PI * 0.5,
   RIGHT: 0,
-  BOTTOM: -90,
-  LEFT: 180,
-  TOP_LEFT: 135,
-  TOP_RIGHT: 45,
-  BOTTOM_RIGHT: -45,
-  BOTTOM_LEFT: -135
+  BOTTOM: PI * -0.5,
+  LEFT: PI,
+  TOP_LEFT: PI * 0.75,
+  TOP_RIGHT: PI * 0.25,
+  BOTTOM_RIGHT: PI * -0.25,
+  BOTTOM_LEFT: PI * -0.75
 };
 
 class Resizable extends Component {
@@ -107,7 +108,7 @@ class Resizable extends Component {
     e.stopPropagation();
     this.startMousePosition = this.getEventCoordinates(e);
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
-    this.rotateOrigin = this.getNodeCenter();
+    this.pivotPoint = this.getNodeCenter();
     this.rotateMode = rotateMode;
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);
@@ -125,13 +126,21 @@ class Resizable extends Component {
   }
 
   handleRotate = (e) => {
-    const { left: canvasLeft, top: canvasTop } = this.canvasPosition;
-    const { x: originX, y: originY } = this.rotateOrigin;
-    const { x: clientX, y: clientY } = this.getEventCoordinates(e);
-    const x2 = clientX - (originX + canvasLeft);
-    const y2 = (canvasTop + originY) - clientY;
-    const degrees = Math.atan2(y2, x2) * (180 / Math.PI);
-    this.props.onRotate(normalizedAngleMap[this.rotateMode] - degrees);
+    /// get mouse position
+    const { x: mouseX, y: mouseY } = this.getEventCoordinates(e);
+
+    // find x/y distances between pivot point and mouse position
+    const diffX = mouseX - (this.pivotPoint.x + this.canvasPosition.left);
+    const diffY = (this.canvasPosition.top + this.pivotPoint.y) - mouseY;
+
+    // find angle between mouse position and positive x-axis
+    const angle = Math.atan2(diffY, diffX);
+    const positiveAngle = angle < 0 ? (2 * PI + angle) : angle;
+
+    // subtract rotated node angle to get angle diff
+    const angleDiff = positiveAngle - normalizedAngleMap[this.rotateMode];
+
+    this.props.onRotate(angleDiff);
   }
 
   getNodeCenter = () => {
