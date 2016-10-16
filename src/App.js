@@ -201,7 +201,7 @@ class App extends Component {
               height,
               left: boundingBox.left,
               top: boundingBox.top,
-              transform: `rotateZ(${rotation * (-180 / PI)}deg)`,
+              transform: `rotateZ(${rotation * 180 / PI}deg)`,
               width
             }}
           >

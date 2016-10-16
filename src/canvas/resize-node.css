@@ -23,13 +23,13 @@
 
 .resizeNode::before {
   content: "";
-  background: blue;
+  background: rgba(33, 150, 243, 0.5);
   border-radius: 8px;
-  opacity: 0.5;
   padding: 8px;
   position: absolute;
   top: -6px;
   left: -6px;
+  z-index: -1;
 }
 
 .handleLeft {

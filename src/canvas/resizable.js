@@ -133,12 +133,10 @@ class Resizable extends Component {
     const diffX = mouseX - (this.pivotPoint.x + this.canvasPosition.left);
     const diffY = (this.canvasPosition.top + this.pivotPoint.y) - mouseY;
 
-    // find angle between mouse position and positive x-axis
+    // find angle between mouse position and positive x-axis relative to rotated ResizeNode
     const angle = Math.atan2(diffY, diffX);
-    const positiveAngle = angle < 0 ? (2 * PI + angle) : angle;
-
-    // subtract rotated node angle to get angle diff
-    const angleDiff = positiveAngle - normalizedAngleMap[this.rotateMode];
+    const clockwiseAngle = angle < 0 ? (2 * PI + angle) : angle;
+    const angleDiff = normalizedAngleMap[this.rotateMode] - clockwiseAngle;
 
     this.props.onRotate(angleDiff);
   }

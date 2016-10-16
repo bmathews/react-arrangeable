@@ -75,7 +75,7 @@ export default class ResizeNode extends Component {
         onMouseDown={this.handleRotate}
         onTouchStart={this.handleRotate}
         style={{
-          backgroundColor: "pink",
+          backgroundColor: "rgba(77, 189, 51, 0.5)",
           padding: 16,
           transform: `scale(${1 / scale})`,
         }}
