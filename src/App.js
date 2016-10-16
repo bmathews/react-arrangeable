@@ -6,6 +6,7 @@ import MODES from "./canvas/modes";
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 500;
+const PI = Math.PI;
 
 class App extends Component {
   constructor(props) {
@@ -156,40 +157,75 @@ class App extends Component {
     );
   }
 
+  getBoundingBoxRect = (height, width, rotation) => {
+    let angle = Math.abs(rotation);
+    if ((angle > PI * 0.5 && angle <= PI) || (angle > PI * 1.5 && angle <= PI * 2)) {
+      angle = PI - angle;
+    }
+
+    const boundingBoxWidth = Math.abs(Math.sin(angle) * height + Math.cos(angle) * width);
+    const boundingBoxHeight = Math.abs(Math.sin(angle) * width + Math.cos(angle) * height);
+
+    return {
+      height: boundingBoxHeight,
+      left: (boundingBoxWidth - width) / 2,
+      top: (boundingBoxHeight - height) / 2,
+      width: boundingBoxWidth
+    };
+  }
+
   renderNodes = () => {
     const { nodes, scale, selectedIndex, isResizing, isDragging } = this.state;
 
     return nodes.map((n, i) => {
       const isSelected = selectedIndex === i;
       const { id, top, left, width, height, rotation } = n;
+      const boundingBox = this.getBoundingBoxRect(height, width, rotation);
 
       return (
         <div
           key={id}
-          onMouseDown={this.handleMouseDown.bind(null, i)}
-          className={`${isSelected ? "selected" : ""} Node`}
-          style={{ top, left, width, height, transform: `rotateZ(${rotation}deg)` }}
+          style={{
+            height: boundingBox.height,
+            left: left - boundingBox.left,
+            position: "absolute",
+            top: top - boundingBox.top,
+            width: boundingBox.width,
+            border: isSelected ? "1px dashed #4DBD33" : "none",
+          }}
         >
-          <CanvasElement
-            getSize={() => n}
-            ref={(el) => { this.elementRefs[id] = el; }}
-            elementIndex={i}
-            scale={scale}
-            onResize={this.handleResize}
-            onResizeStart={this.handleResizeStart}
-            onResizeStop={this.handleResizeStop}
-            onRotate={this.handleRotate}
-            onDrag={this.handleDrag}
-            onDragStart={this.handleDragStart}
-            onDragStop={this.handleDragStop}
-            isSelected={isSelected}
-            isResizing={isSelected && isResizing}
-            isDragging={isSelected && isDragging}
-            resizeHorizontal={isSelected && !isDragging}
-            resizeVertical={isSelected && !isDragging}
-            canArrange={isSelected && !isResizing && !isDragging}
-            draggable
-          />
+          <div
+            onMouseDown={this.handleMouseDown.bind(null, i)}
+            className={`${isSelected ? "selected" : ""} Node`}
+            style={{
+              height,
+              left: boundingBox.left,
+              top: boundingBox.top,
+              transform: `rotateZ(${rotation * (-180 / PI)}deg)`,
+              width
+            }}
+          >
+            <CanvasElement
+              getSize={() => n}
+              ref={(el) => { this.elementRefs[id] = el; }}
+              elementIndex={i}
+              scale={scale}
+              onResize={this.handleResize}
+              onResizeStart={this.handleResizeStart}
+              onResizeStop={this.handleResizeStop}
+              onRotate={this.handleRotate}
+              onDrag={this.handleDrag}
+              onDragStart={this.handleDragStart}
+              onDragStop={this.handleDragStop}
+              isSelected={isSelected}
+              isResizing={isSelected && isResizing}
+              isDragging={isSelected && isDragging}
+              resizeHorizontal={isSelected && !isDragging}
+              resizeVertical={isSelected && !isDragging}
+              canArrange={isSelected && !isResizing && !isDragging}
+              draggable
+            />
+          </div>
         </div>
       );
     })
