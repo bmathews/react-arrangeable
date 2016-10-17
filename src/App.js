@@ -6,7 +6,6 @@ import MODES from "./canvas/modes";
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 500;
-const PI = Math.PI;
 
 class App extends Component {
   constructor(props) {
@@ -69,7 +68,7 @@ class App extends Component {
 
     nodes.forEach((n, i) => {
       if (i === selectedIndex) return;
-      rects.push(n);
+      rects.push(constraints.getBoundingBox(n));
     });
 
     const lines = constraints.rectToSnapLines({
@@ -157,51 +156,30 @@ class App extends Component {
     );
   }
 
-  getBoundingBoxRect = (height, width, rotation) => {
-    let angle = Math.abs(rotation);
-    if ((angle > PI * 0.5 && angle <= PI) || (angle > PI * 1.5 && angle <= PI * 2)) {
-      angle = PI - angle;
-    }
-
-    const boundingBoxWidth = Math.abs(Math.sin(angle) * height + Math.cos(angle) * width);
-    const boundingBoxHeight = Math.abs(Math.sin(angle) * width + Math.cos(angle) * height);
-
-    return {
-      height: boundingBoxHeight,
-      left: (boundingBoxWidth - width) / 2,
-      top: (boundingBoxHeight - height) / 2,
-      width: boundingBoxWidth
-    };
-  }
-
   renderNodes = () => {
     const { nodes, scale, selectedIndex, isResizing, isDragging } = this.state;
 
     return nodes.map((n, i) => {
       const isSelected = selectedIndex === i;
-      const { id, top, left, width, height, rotation } = n;
-      const boundingBox = this.getBoundingBoxRect(height, width, rotation);
+      const { id, width, height, rotation } = n;
+      const boundingBox = constraints.getBoundingBox(n);
 
       return (
         <div
           key={id}
-          style={{
-            height: boundingBox.height,
-            left: left - boundingBox.left,
+          style={Object.assign({}, boundingBox, {
             position: "absolute",
-            top: top - boundingBox.top,
-            width: boundingBox.width,
-            border: isSelected ? "1px dashed #4DBD33" : "none",
-          }}
+            border: isSelected ? "1px dashed #4DBD33" : "none"
+          })}
         >
           <div
             onMouseDown={this.handleMouseDown.bind(null, i)}
             className={`${isSelected ? "selected" : ""} Node`}
             style={{
               height,
-              left: boundingBox.left,
-              top: boundingBox.top,
-              transform: `rotateZ(${rotation * 180 / PI}deg)`,
+              left: (boundingBox.width - width) / 2,
+              top: (boundingBox.height - height) / 2,
+              transform: `rotateZ(${rotation * 180 / Math.PI}deg)`,
               width
             }}
           >

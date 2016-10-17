@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import MODES from "./modes";
 const SNAP_DISTANCE = 15;
+const PI = Math.PI;
 
 const isVerticalResize = (mode) => (
   mode !== MODES.LEFT && mode !== MODES.RIGHT && mode !== MODES.MOVE
@@ -187,9 +188,30 @@ export const constrainRatio = (originalSize, nextSize, snapResults, mode) => {
   return size;
 };
 
+export const getBoundingBox = (node) => {
+  const { top, left, width, height, rotation } = node;
+
+  let angle = Math.abs(rotation);
+  if ((angle > PI * 0.5 && angle <= PI) || (angle > PI * 1.5 && angle <= PI * 2)) {
+    angle = PI - angle;
+  }
+
+  const boundingBoxWidth =
+    Math.round(Math.abs(Math.sin(angle) * height + Math.cos(angle) * width));
+  const boundingBoxHeight =
+    Math.round(Math.abs(Math.sin(angle) * width + Math.cos(angle) * height));
+
+  return {
+    height: boundingBoxHeight,
+    left: left - (boundingBoxWidth - width) / 2,
+    top: top - (boundingBoxHeight - height) / 2,
+    width: boundingBoxWidth
+  };
+};
+
 export const constrainGrid = (nextSize, snapLines, mode) => {
   const constrained = { ...nextSize };
-  const itemSnapLines = rectToSnapLines(constrained, mode);
+  const itemSnapLines = rectToSnapLines(getBoundingBox(constrained), mode);
   const closest = getClosestSnapLines(snapLines, itemSnapLines);
   const lines = [];
   let dy = 0;

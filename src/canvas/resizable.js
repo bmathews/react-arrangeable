@@ -136,9 +136,8 @@ class Resizable extends Component {
     // find angle between mouse position and positive x-axis relative to rotated ResizeNode
     const angle = Math.atan2(diffY, diffX);
     const clockwiseAngle = angle < 0 ? (2 * PI + angle) : angle;
-    const angleDiff = normalizedAngleMap[this.rotateMode] - clockwiseAngle;
-
-    this.props.onRotate(angleDiff);
+    const rotation = normalizedAngleMap[this.rotateMode] - clockwiseAngle;
+    this.props.onRotate(rotation);
   }
 
   getNodeCenter = () => {
