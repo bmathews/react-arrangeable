@@ -128,11 +128,11 @@ class App extends Component {
     this.setState({ selectedIndex: null })
   }
 
-  handleRotate = (degrees) => {
+  handleRotate = (radians) => {
     const { nodes, selectedIndex } = this.state;
     const clonedNodes = JSON.parse(JSON.stringify(nodes));
     const node = clonedNodes[selectedIndex];
-    node.rotation = degrees;
+    node.rotation = radians;
     this.setState({ nodes: clonedNodes });
   }
 

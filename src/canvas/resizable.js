@@ -15,13 +15,13 @@ const alignPropMap ={
 
 const PI = Math.PI;
 const normalizedAngleMap ={
-  TOP: PI * 0.5,
   RIGHT: 0,
-  BOTTOM: PI * -0.5,
-  LEFT: PI,
-  TOP_LEFT: PI * 0.75,
   TOP_RIGHT: PI * 0.25,
+  TOP: PI * 0.5,
+  TOP_LEFT: PI * 0.75,
+  LEFT: PI,
   BOTTOM_RIGHT: PI * -0.25,
+  BOTTOM: PI * -0.5,
   BOTTOM_LEFT: PI * -0.75
 };
 
@@ -135,8 +135,7 @@ class Resizable extends Component {
 
     // find angle between mouse position and positive x-axis relative to rotated ResizeNode
     const angle = Math.atan2(diffY, diffX);
-    const clockwiseAngle = angle < 0 ? (2 * PI + angle) : angle;
-    const rotation = normalizedAngleMap[this.rotateMode] - clockwiseAngle;
+    const rotation = normalizedAngleMap[this.rotateMode] - angle;
     this.props.onRotate(rotation);
   }
 
