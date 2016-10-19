@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from "react";
-import { getEventCoordinates, getNodeCenter } from "./utils";
+import { getEventCoordinates } from "./utils";
 
 class Rotatable extends Component {
   static displayName = "Rotatable";
@@ -14,7 +14,7 @@ class Rotatable extends Component {
     e.preventDefault();
     e.stopPropagation();
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
-    this.nodeCenter = getNodeCenter(this.props.getRect());
+    this.startRect = this.props.getRect();
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);
     document.addEventListener("touchmove", this.handleRotate);
@@ -35,8 +35,8 @@ class Rotatable extends Component {
     const { x: mouseX, y: mouseY } = getEventCoordinates(e);
 
     // find x/y distances between center/pivot point and mouse position
-    const diffX = mouseX - (this.nodeCenter.x + this.canvasPosition.left);
-    const diffY = (this.canvasPosition.top + this.nodeCenter.y) - mouseY;
+    const diffX = mouseX - (this.startRect.x + this.canvasPosition.left);
+    const diffY = (this.canvasPosition.top + this.startRect.y) - mouseY;
 
     // find angle between mouse position and positive x-axis relative to rotated ResizeNode
     const angle = Math.atan2(diffY, diffX);

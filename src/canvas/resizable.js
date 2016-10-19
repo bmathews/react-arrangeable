@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from "react";
 import ResizeHandle from "./resize-handle";
 import MODES from "./modes";
-import { getEventCoordinates, getNodeCenter } from "./utils";
+import { getEventCoordinates } from "./utils";
 
 const alignPropMap ={
   TOP: "alignTop",
@@ -40,7 +40,6 @@ class Resizable extends Component {
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.startMousePosition = getEventCoordinates(e);
     this.startRect = this.props.getRect();
-    this.nodeCenter = getNodeCenter(this.startRect);
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.stopResize);
     document.addEventListener("touchmove", this.handleMouseMove);
@@ -69,8 +68,8 @@ class Resizable extends Component {
     const { x: mouseX, y: mouseY } = getEventCoordinates(e);
 
     // find x/y distances between center/pivot point and mouse position
-    const diffX = startX - (this.nodeCenter.x + this.canvasPosition.left);
-    const diffY = (this.canvasPosition.top + this.nodeCenter.y) - startY;
+    const diffX = startX - (this.startRect.x + this.canvasPosition.left);
+    const diffY = (this.canvasPosition.top + this.startRect.y) - startY;
 
     // clone start rectangle
     const newRect = { ...this.startRect };
@@ -156,8 +155,8 @@ class Resizable extends Component {
 
     newRect.height += heightDiff;
     newRect.width += widthDiff;
-    newRect.top += topDiff;
-    newRect.left += leftDiff;
+    newRect.y += topDiff;
+    newRect.x += leftDiff;
 
     this.props.onResize(newRect);
   }
