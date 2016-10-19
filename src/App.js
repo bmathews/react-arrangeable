@@ -116,13 +116,12 @@ class App extends Component {
           >
             <CanvasElement
               ref={(el) => { this.elementRefs[id] = el; }}
-              getSize={() => n}
+              getRect={() => n}
               elementIndex={i}
               isSelected={isSelected}
               onDrag={this.handleDrag}
               onResize={this.handleResize}
               onRotate={this.handleRotate}
-              draggable
             />
           </div>
         </div>

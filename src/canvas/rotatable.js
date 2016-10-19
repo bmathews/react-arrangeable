@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from "react";
-import { getEventCoordinates } from "./utils";
+import { getEventCoordinates, getNodeCenter } from "./utils";
 
 const PI = Math.PI;
 const normalizedAngleMap ={
@@ -18,16 +18,15 @@ class Rotatable extends Component {
 
   static propTypes = {
     children: PropTypes.node,
-    getSize: PropTypes.func,
-    getNodeCenter: PropTypes.func,
-    onRotate: PropTypes.func,
+    getRect: PropTypes.func,
+    onRotate: PropTypes.func
   };
 
   startRotate = (e, rotateMode) => {
     e.preventDefault();
     e.stopPropagation();
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
-    this.nodeCenter = this.props.getNodeCenter();
+    this.nodeCenter = getNodeCenter(this.props.getRect());
     this.rotateMode = rotateMode;
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);

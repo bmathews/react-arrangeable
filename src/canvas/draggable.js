@@ -6,15 +6,14 @@ class Draggable extends Component {
 
   static propTypes = {
     children: PropTypes.node,
-    draggable: PropTypes.bool,
-    getSize: PropTypes.func,
+    getRect: PropTypes.func,
+    isSelected: PropTypes.bool,
     onDrag: PropTypes.func
   };
 
   startDrag = (e) => {
-    if (!this.props.draggable) return;
     this.startMousePosition = getEventCoordinates(e);
-    this.sizeAtStart = this.props.getSize();
+    this.startRect = this.props.getRect();
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.stopDrag);
     document.addEventListener("touchmove", this.handleMouseMove);
@@ -30,26 +29,22 @@ class Draggable extends Component {
     document.removeEventListener("touchend", this.stopDrag);
   }
 
-  handleMouseDown = (e) => {
-    this.startDrag(e);
-  }
-
   handleMouseMove = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const coords = getEventCoordinates(e);
-    const targetSize = { ...this.sizeAtStart };
-    targetSize.left += (coords.x - this.startMousePosition.x);
-    targetSize.top += (coords.y - this.startMousePosition.y);
-    this.props.onDrag(targetSize);
+    const currentMousePosition = getEventCoordinates(e);
+    const newRect = { ...this.startRect };
+    newRect.left += (currentMousePosition.x - this.startMousePosition.x);
+    newRect.top += (currentMousePosition.y - this.startMousePosition.y);
+    this.props.onDrag(newRect);
   }
 
   render() {
     return (
       <div
         style={{ width: "100%", height: "100%", cursor: "move" }}
-        onMouseDown={this.handleMouseDown}
-        onTouchStart={this.handleMouseDown}
+        onMouseDown={this.startDrag}
+        onTouchStart={this.startDrag}
       >
         {this.props.children}
       </div>

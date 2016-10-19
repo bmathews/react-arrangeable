@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from "react";
 import ResizeNode from "./resize-node";
 import MODES from "./modes";
-import { getEventCoordinates } from "./utils";
+import { getEventCoordinates, getNodeCenter } from "./utils";
 
 const alignPropMap ={
   TOP: "alignTop",
@@ -22,8 +22,7 @@ class Resizable extends Component {
 
   static propTypes = {
     children: PropTypes.node,
-    getSize: PropTypes.func,
-    getNodeCenter: PropTypes.func,
+    getRect: PropTypes.func,
     isSelected: PropTypes.bool,
     onResize: PropTypes.func
   };
@@ -40,8 +39,8 @@ class Resizable extends Component {
     e.stopPropagation();
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.startMousePosition = getEventCoordinates(e);
-    this.sizeAtStart = this.props.getSize();
-    this.nodeCenter = this.props.getNodeCenter();
+    this.startRect = this.props.getRect();
+    this.nodeCenter = getNodeCenter(this.startRect);
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.stopResize);
     document.addEventListener("touchmove", this.handleMouseMove);
@@ -74,7 +73,7 @@ class Resizable extends Component {
     const diffY = (this.canvasPosition.top + this.nodeCenter.y) - startY;
 
     // clone start rectangle
-    const rect = { ...this.sizeAtStart };
+    const newRect = { ...this.startRect };
 
     // calculate distance and angle between original and current mouse positions
     const length = Math.sqrt(Math.pow(mouseX - startX, 2) + Math.pow(mouseY - startY, 2));
@@ -86,7 +85,7 @@ class Resizable extends Component {
     let leftDiff = 0;
 
     // calculate position diffs of new rectangle
-    if (rect.rotation === 0) {
+    if (newRect.rotation === 0) {
       if (isEdge) {
         if (angle > PI * 0.25 && angle < PI * 0.75) { // top
           heightDiff = startY - mouseY;
@@ -120,7 +119,7 @@ class Resizable extends Component {
       }
     } else {
       if (resizeMode === MODES.RIGHT) {
-        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+        if (newRect.rotation > PI * -0.5 && newRect.rotation < PI * 0.5) {
           widthDiff = length * (mouseX > startX ? 1 : -1);
           topDiff = mouseY > startY;
         } else {
@@ -128,21 +127,21 @@ class Resizable extends Component {
           leftDiff = -widthDiff;
         }
       } else if (resizeMode === MODES.LEFT) {
-        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+        if (newRect.rotation > PI * -0.5 && newRect.rotation < PI * 0.5) {
           widthDiff = length * (startX > mouseX ? 1 : -1);
           leftDiff = -widthDiff;
         } else {
           widthDiff = length * (mouseX > startX ? 1 : -1);
         }
       } else if (resizeMode === MODES.TOP) {
-        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+        if (newRect.rotation > PI * -0.5 && newRect.rotation < PI * 0.5) {
           heightDiff = length * (startY > mouseY ? 1 : -1);
           topDiff = -heightDiff;
         } else {
           heightDiff = length * (mouseY > startY ? 1 : -1);
         }
       } else if (resizeMode === MODES.BOTTOM) {
-        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+        if (newRect.rotation > PI * -0.5 && newRect.rotation < PI * 0.5) {
           heightDiff = length * (mouseY > startY ? 1 : -1);
         } else {
           heightDiff = length * (startY > mouseY ? 1 : -1);
@@ -150,17 +149,17 @@ class Resizable extends Component {
         }
       } else {
         console.log("height&width");
-        // heightDiff = Math.sin(rect.rotation) * length;
-        // widthDiff = Math.cos(rect.rotation) * length;
+        // heightDiff = Math.sin(newRect.rotation) * length;
+        // widthDiff = Math.cos(newRect.rotation) * length;
       }
     }
 
-    rect.height += heightDiff;
-    rect.width += widthDiff;
-    rect.top += topDiff;
-    rect.left += leftDiff;
+    newRect.height += heightDiff;
+    newRect.width += widthDiff;
+    newRect.top += topDiff;
+    newRect.left += leftDiff;
 
-    this.props.onResize(rect);
+    this.props.onResize(newRect);
   }
 
   getResizeNodes = () => {
