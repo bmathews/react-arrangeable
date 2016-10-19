@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import MODES from "./modes";
 const SNAP_DISTANCE = 15;
-const PI = Math.PI;
 
 const isVerticalResize = (mode) => (
   mode !== MODES.LEFT && mode !== MODES.RIGHT && mode !== MODES.MOVE

@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import CanvasElement from "./CanvasElement";
 import "./App.css";
 
+const PI = Math.PI;
+
 class App extends Component {
   constructor(props) {
     super(props);
