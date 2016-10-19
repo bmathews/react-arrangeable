@@ -1,31 +1,19 @@
 import React, { Component, PropTypes } from "react";
-import MODES from "./modes";
+import { getEventCoordinates } from "./utils";
 
 class Draggable extends Component {
   static displayName = "Draggable";
+
   static propTypes = {
+    children: PropTypes.node,
     draggable: PropTypes.bool,
-    onDrag: PropTypes.func,
-    onDragStart: PropTypes.func,
-    onDragStop: PropTypes.func,
     getSize: PropTypes.func,
-    children: PropTypes.node
-  }
-
-  static defaultProps = {
-    onDragStart: () => {},
-    onDragStop: () => {}
-  }
-
-  getEventCoordinates = (e) => ({
-    x: e.touches ? e.touches[0].clientX : e.clientX,
-    y: e.touches ? e.touches[0].clientY : e.clientY
-  })
+    onDrag: PropTypes.func
+  };
 
   startDrag = (e) => {
     if (!this.props.draggable) return;
-    this.dragStartTime = Date.now();
-    this.startMousePosition = this.getEventCoordinates(e);
+    this.startMousePosition = getEventCoordinates(e);
     this.sizeAtStart = this.props.getSize();
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.stopDrag);
@@ -40,12 +28,6 @@ class Draggable extends Component {
     document.removeEventListener("mouseup", this.stopDrag);
     document.removeEventListener("touchmove", this.handleMouseMove);
     document.removeEventListener("touchend", this.stopDrag);
-
-    if (!this.dragStartTime) {
-      this.props.onDragStop(MODES.MOVE);
-    } else {
-      this.dragStartTime = null;
-    }
   }
 
   handleMouseDown = (e) => {
@@ -54,28 +36,18 @@ class Draggable extends Component {
 
   handleMouseMove = (e) => {
     e.preventDefault();
-    const coords = this.getEventCoordinates(e);
-    if (this.dragStartTime && Date.now() - this.dragStartTime > 100 &&
-       (coords.x !== this.startMousePosition.x || coords.y !== this.startMousePosition.y)) {
-      this.dragStartTime = null;
-      this.props.onDragStart(this.sizeAtStart);
-    } else if (!this.dragStartTime) {
-      e.stopPropagation();
-      const targetSize = { ...this.sizeAtStart };
-      targetSize.left += (coords.x - this.startMousePosition.x);
-      targetSize.top += (coords.y - this.startMousePosition.y);
-      this.moveTo(targetSize);
-    }
-  }
-
-  moveTo(rect) {
-    this.props.onDrag(rect);
+    e.stopPropagation();
+    const coords = getEventCoordinates(e);
+    const targetSize = { ...this.sizeAtStart };
+    targetSize.left += (coords.x - this.startMousePosition.x);
+    targetSize.top += (coords.y - this.startMousePosition.y);
+    this.props.onDrag(targetSize);
   }
 
   render() {
     return (
       <div
-        style={{ width: '100%', height: '100%', cursor: 'move' }}
+        style={{ width: "100%", height: "100%", cursor: "move" }}
         onMouseDown={this.handleMouseDown}
         onTouchStart={this.handleMouseDown}
       >

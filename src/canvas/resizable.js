@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from "react";
 import ResizeNode from "./resize-node";
 import MODES from "./modes";
+import { getEventCoordinates } from "./utils";
 
 const alignPropMap ={
   TOP: "alignTop",
@@ -14,16 +15,7 @@ const alignPropMap ={
 };
 
 const PI = Math.PI;
-const normalizedAngleMap ={
-  RIGHT: 0,
-  TOP_RIGHT: PI * 0.25,
-  TOP: PI * 0.5,
-  TOP_LEFT: PI * 0.75,
-  LEFT: PI,
-  BOTTOM_RIGHT: PI * -0.25,
-  BOTTOM: PI * -0.5,
-  BOTTOM_LEFT: PI * -0.75
-};
+const modes = ["RIGHT", "LEFT", "TOP", "BOTTOM", "TOP_LEFT", "TOP_RIGHT", "BOTTOM_RIGHT", "BOTTOM_LEFT"];
 
 class Resizable extends Component {
   static displayName = "Resizable";
@@ -31,65 +23,29 @@ class Resizable extends Component {
   static propTypes = {
     children: PropTypes.node,
     getSize: PropTypes.func,
-    onResize: PropTypes.func,
-    onResizeStart: PropTypes.func,
-    onResizeStop: PropTypes.func,
-    onRotate: PropTypes.func,
-    resizeHorizontal: PropTypes.bool,
-    resizeVertical: PropTypes.bool
-  };
-
-  static defaultProps = {
-    onResizeStart: () => {},
-    onResizeStop: () => {}
+    getNodeCenter: PropTypes.func,
+    isSelected: PropTypes.bool,
+    onResize: PropTypes.func
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      modes: this.getModes(props.resizeHorizontal, props.resizeVertical),
       resizeMode: null
     };
   }
-
-  componentWillReceiveProps(nextProps) {
-    const { resizeHorizontal: rh, resizeVertical: rv } = this.props;
-    if (rh !== nextProps.resizeHorizontal || rv !== nextProps.resizeVertical) {
-      this.setState({ modes: this.getModes(nextProps.resizeHorizontal, nextProps.resizeVertical) });
-    }
-  }
-
-  getModes(resizeHorizontal, resizeVertical) {
-    const modes = [];
-    if (resizeHorizontal) {
-      modes.push("RIGHT", "LEFT");
-    }
-    if (resizeVertical) {
-      modes.push("TOP", "BOTTOM");
-    }
-    if (resizeVertical && resizeHorizontal) {
-      modes.push("TOP_LEFT", "TOP_RIGHT", "BOTTOM_RIGHT", "BOTTOM_LEFT");
-    }
-    return modes;
-  }
-
-  getEventCoordinates = (e) => ({
-    x: e.touches ? e.touches[0].clientX : e.clientX,
-    y: e.touches ? e.touches[0].clientY : e.clientY
-  })
 
   startResize = (e, resizeMode) => {
     e.preventDefault();
     e.stopPropagation();
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
-    this.startMousePosition = this.getEventCoordinates(e);
+    this.startMousePosition = getEventCoordinates(e);
     this.sizeAtStart = this.props.getSize();
-    this.nodeCenter = this.getNodeCenter();
+    this.nodeCenter = this.props.getNodeCenter();
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.stopResize);
     document.addEventListener("touchmove", this.handleMouseMove);
     document.addEventListener("touchend", this.stopResize);
-    this.props.onResizeStart(this.sizeAtStart);
     this.setState({ resizeMode });
   }
 
@@ -100,51 +56,7 @@ class Resizable extends Component {
     document.removeEventListener("mouseup", this.stopResize);
     document.removeEventListener("touchmove", this.handleMouseMove);
     document.removeEventListener("touchend", this.stopResize);
-    this.props.onResizeStop(this.state.resizeMode);
     this.setState({ resizeMode: null });
-  }
-
-  startRotate = (e, rotateMode) => {
-    e.preventDefault();
-    e.stopPropagation();
-    this.canvasPosition = document.getElementById("app").getBoundingClientRect();
-    this.nodeCenter = this.getNodeCenter();
-    this.rotateMode = rotateMode;
-    document.addEventListener("mousemove", this.handleRotate);
-    document.addEventListener("mouseup", this.stopRotate);
-    document.addEventListener("touchmove", this.handleRotate);
-    document.addEventListener("touchend", this.stopRotate);
-  }
-
-  stopRotate = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    document.removeEventListener("mousemove", this.handleRotate);
-    document.removeEventListener("mouseup", this.stopRotate);
-    document.removeEventListener("touchmove", this.handleRotate);
-    document.removeEventListener("touchend", this.stopRotate);
-  }
-
-  handleRotate = (e) => {
-    // get mouse position
-    const { x: mouseX, y: mouseY } = this.getEventCoordinates(e);
-
-    // find x/y distances between center/pivot point and mouse position
-    const diffX = mouseX - (this.nodeCenter.x + this.canvasPosition.left);
-    const diffY = (this.canvasPosition.top + this.nodeCenter.y) - mouseY;
-
-    // find angle between mouse position and positive x-axis relative to rotated ResizeNode
-    const angle = Math.atan2(diffY, diffX);
-    const rotation = normalizedAngleMap[this.rotateMode] - angle;
-    this.props.onRotate(rotation);
-  }
-
-  getNodeCenter = () => {
-    const { left, top, width, height } = this.props.getSize();
-    return {
-      x: left + width / 2,
-      y: top + height / 2
-    };
   }
 
   handleMouseMove = (e) => {
@@ -155,7 +67,7 @@ class Resizable extends Component {
 
     // get original and current mouse positions
     const { x: startX, y: startY } = this.startMousePosition;
-    const { x: mouseX, y: mouseY } = this.getEventCoordinates(e);
+    const { x: mouseX, y: mouseY } = getEventCoordinates(e);
 
     // find x/y distances between center/pivot point and mouse position
     const diffX = startX - (this.nodeCenter.x + this.canvasPosition.left);
@@ -251,18 +163,17 @@ class Resizable extends Component {
     this.props.onResize(rect);
   }
 
-  getResizeNodes = (nodeModes) => {
-    return nodeModes.map((nodeMode) => {
-      const mode = MODES[nodeMode];
-      const alignProp = { [alignPropMap[mode]]: true };
+  getResizeNodes = () => {
+    return modes.map((mode) => {
+      const nodeMode = MODES[mode];
+      const alignProp = { [alignPropMap[nodeMode]]: true };
       return (
         <ResizeNode
           {...alignProp}
-          key={mode}
-          mode={mode}
+          key={nodeMode}
+          mode={nodeMode}
           activeMode={this.state.resizeMode}
           onResize={this.startResize}
-          onRotate={this.startRotate}
         />
       );
     });
@@ -272,7 +183,7 @@ class Resizable extends Component {
     return (
       <div style={{ width: "100%", height: "100%", position: "relative" }}>
         {this.props.children}
-        {this.getResizeNodes(this.state.modes)}
+        {this.props.isSelected && this.getResizeNodes()}
       </div>
     );
   }

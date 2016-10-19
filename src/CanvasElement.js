@@ -1,65 +1,52 @@
 import React, { Component, PropTypes } from "react";
+import Rotatable from "./canvas/rotatable";
 import Resizable from "./canvas/resizable";
 import Draggable from "./canvas/draggable";
 
-export const CanvasElementPropTypes = {
-  children: PropTypes.node,
-  draggable: PropTypes.bool,
-  getSize: PropTypes.func,
-  onDrag: PropTypes.func,
-  onDragStart: PropTypes.func,
-  onDragStop: PropTypes.func,
-  isDragging: PropTypes.bool,
-  isPlaceholder: PropTypes.bool,
-  isResizing: PropTypes.bool,
-  isSelected: PropTypes.bool,
-  onResize: PropTypes.func,
-  onResizeStart: PropTypes.func,
-  onResizeStop: PropTypes.func,
-  onRotate: PropTypes.func,
-  resizeHorizontal: PropTypes.bool,
-  resizeVertical: PropTypes.bool
-};
-
 class CanvasElement extends Component {
-  static propTypes = CanvasElementPropTypes;
+  static propTypes = {
+    children: PropTypes.node,
+    draggable: PropTypes.bool,
+    getSize: PropTypes.func,
+    isSelected: PropTypes.bool,
+    onDrag: PropTypes.func,
+    onResize: PropTypes.func,
+    onRotate: PropTypes.func
+  };
+
+  getNodeCenter = () => {
+    const { left, top, width, height } = this.props.getSize();
+    return {
+      x: left + width / 2,
+      y: top + height / 2
+    };
+  }
 
   render() {
-    const {
-      children,
-      draggable,
-      getSize,
-      onDrag,
-      onDragStart,
-      onDragStop,
-      onResize,
-      onResizeStart,
-      onResizeStop,
-      onRotate,
-      resizeHorizontal,
-      resizeVertical
-    } = this.props;
+    const { children, draggable, getSize, isSelected, onDrag, onResize, onRotate } = this.props;
 
     return (
-      <Resizable
+      <Rotatable
         getSize={getSize}
-        onResize={onResize}
-        onResizeStart={onResizeStart}
-        onResizeStop={onResizeStop}
+        getNodeCenter={this.getNodeCenter}
+        isSelected={isSelected}
         onRotate={onRotate}
-        resizeHorizontal={resizeHorizontal}
-        resizeVertical={resizeVertical}
       >
-        <Draggable
+        <Resizable
           getSize={getSize}
-          onDrag={onDrag}
-          onDragStart={onDragStart}
-          onDragStop={onDragStop}
-          draggable={draggable}
+          getNodeCenter={this.getNodeCenter}
+          isSelected={isSelected}
+          onResize={onResize}
         >
-          {children}
-        </Draggable>
-      </Resizable>
+          <Draggable
+            draggable={draggable}
+            getSize={getSize}
+            onDrag={onDrag}
+          >
+            {children}
+          </Draggable>
+        </Resizable>
+      </Rotatable>
     );
   }
 }

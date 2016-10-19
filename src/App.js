@@ -40,18 +40,6 @@ class App extends Component {
     this.setState({ nodes: clonedNodes });
   }
 
-  handleResizeStart = () => {
-    this.setState({
-      isResizing: true
-    });
-  }
-
-  handleResizeStop = () => {
-    this.setState({
-      isResizing: false
-    });
-  }
-
   handleDrag = (newRect) => {
     const { nodes, selectedIndex } = this.state;
     const clonedNodes = JSON.parse(JSON.stringify(nodes));
@@ -59,18 +47,6 @@ class App extends Component {
     node.left = newRect.left;
     node.top = newRect.top;
     this.setState({ nodes: clonedNodes });
-  }
-
-  handleDragStart = () => {
-    this.setState({
-      isDragging: true
-    });
-  }
-
-  handleDragStop = () => {
-    this.setState({
-      isDragging: false
-    });
   }
 
   handleMouseDown = (i, e) => {
@@ -112,7 +88,7 @@ class App extends Component {
   }
 
   renderNodes = () => {
-    const { nodes, selectedIndex, isResizing, isDragging } = this.state;
+    const { nodes, selectedIndex } = this.state;
 
     return nodes.map((n, i) => {
       const isSelected = selectedIndex === i;
@@ -134,27 +110,18 @@ class App extends Component {
               height,
               left: (boundingBox.width - width) / 2,
               top: (boundingBox.height - height) / 2,
-              transform: `rotateZ(${rotation * 180 / Math.PI}deg)`,
+              transform: `rotateZ(${rotation * 180 / PI}deg)`,
               width
             }}
           >
             <CanvasElement
-              getSize={() => n}
               ref={(el) => { this.elementRefs[id] = el; }}
+              getSize={() => n}
               elementIndex={i}
-              onResize={this.handleResize}
-              onResizeStart={this.handleResizeStart}
-              onResizeStop={this.handleResizeStop}
-              onRotate={this.handleRotate}
-              onDrag={this.handleDrag}
-              onDragStart={this.handleDragStart}
-              onDragStop={this.handleDragStop}
               isSelected={isSelected}
-              isResizing={isSelected && isResizing}
-              isDragging={isSelected && isDragging}
-              resizeHorizontal={isSelected && !isDragging}
-              resizeVertical={isSelected && !isDragging}
-              canArrange={isSelected && !isResizing && !isDragging}
+              onDrag={this.handleDrag}
+              onResize={this.handleResize}
+              onRotate={this.handleRotate}
               draggable
             />
           </div>
