@@ -13,30 +13,11 @@ export default class ResizeNode extends Component {
     cornerTopLeft: PropTypes.bool,
     cornerTopRight: PropTypes.bool,
     mode: PropTypes.string,
-    onResize: PropTypes.func,
-    onRotate: PropTypes.func
+    onResize: PropTypes.func
   };
-
-  renderCornerIcon = (props) => {
-    const { cornerTopLeft, cornerTopRight, cornerBottomRight, cornerBottomLeft } = props;
-    if (!cornerTopLeft && !cornerTopRight && !cornerBottomRight && !cornerBottomLeft) return;
-
-    const iconClassNames = [
-      cornerTopLeft && "iconTopLeft",
-      cornerTopRight && "iconTopRight",
-      cornerBottomLeft && "iconBottomLeft",
-      cornerBottomRight && "iconBottomRight"
-    ].join(" ");
-
-    return <span className={iconClassNames} />;
-  }
 
   handleResize = e => {
     this.props.onResize(e, this.props.mode);
-  }
-
-  handleRotate = e => {
-    this.props.onRotate(e, this.props.mode);
   }
 
   render() {
@@ -70,16 +51,9 @@ export default class ResizeNode extends Component {
     return (
       <div
         className={resolvedClassNames}
-        onMouseDown={this.handleRotate}
-        onTouchStart={this.handleRotate}
-        style={{ backgroundColor: "rgba(77, 189, 51, 0.5)", padding: 16 }}
-      >
-        <div
-          className="resizeNode"
-          onMouseDown={this.handleResize}
-          onTouchStart={this.handleResize}
-        />
-      </div>
+        onMouseDown={this.handleResize}
+        onTouchStart={this.handleResize}
+      />
     );
   }
 }

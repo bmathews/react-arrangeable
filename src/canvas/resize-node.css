@@ -1,94 +1,76 @@
 .handle {
-  border-radius: 16px;
-  box-sizing: border-box;
-  cursor: url(../rotate-cursor.svg), auto;
+  height: 20px;
   position: absolute;
+  width: 20px;
   z-index: 100;
-  width: 32px;
-  height: 32px;
 }
 
-.resizeNode {
-  position: absolute;
-  background: #fff;
-  border: 1px solid #000;
-  box-sizing: border-box;
-  height: 6px;
-  width: 6px;
-  top: 50%;
-  left: 50%;
-  margin-top: -3px;
-  margin-left: -3px;
-}
-
-.resizeNode::before {
+.handle::before {
   content: "";
-  background: rgba(33, 150, 243, 0.5);
-  border-radius: 8px;
-  padding: 8px;
+  background: #fff;
+  border: 1px solid #2196F3;
+  height: 6px;
+  left: 50%;
   position: absolute;
-  top: -6px;
-  left: -6px;
-  z-index: -1;
+  margin-left: -3px;
+  margin-top: -3px;
+  top: 50%;
+  width: 6px;
+  z-index: 100;
 }
 
 .handleLeft {
-  left: -16px;
+  cursor: ew-resize;
+  left: 0;
+  margin-left: -10px;
+  margin-top: -10px;
   top: 50%;
-  margin-top: -16px;
 }
 
 .handleTop {
+  cursor: ns-resize;
   left: 50%;
-  top: -16px;
-  margin-left: -16px;
+  margin-left: -10px;
+  margin-top: -10px;
+  top: 0;
 }
 
 .handleBottom {
+  bottom: 0;
+  cursor: ns-resize;
   left: 50%;
-  bottom: -16px;
-  margin-left: -16px;
+  margin-left: -10px;
+  margin-bottom: -10px;
 }
 
 .handleRight {
+  cursor: ew-resize;
+  margin-right: -10px;
+  margin-top: -10px;
+  right: 0;
   top: 50%;
-  right: -16px;
-  margin-top: -16px;
 }
 
 .cornerTopLeft {
-  top: -16px;
-  left: -16px;
+  cursor: nwse-resize;
+  left: -10px;
+  top: -10px;
 }
 
 .cornerTopRight {
-  top: -16px;
-  right: -16px;
+  cursor: nesw-resize;
+  right: -10px;
+  top: -10px;
 }
 
 .cornerBottomLeft {
-  bottom: -16px;
-  left: -16px;
+  bottom: -10px;
+  cursor: nesw-resize;
+  left: -10px;
 }
 
 .cornerBottomRight {
-  bottom: -16px;
-  right: -16px;
-}
-
-.cornerTopRight .resizeNode,
-.cornerBottomLeft .resizeNode {
-  cursor: nesw-resize;
-}
-.cornerTopLeft .resizeNode,
-.cornerBottomRight .resizeNode {
+  bottom: -10px;
   cursor: nwse-resize;
-}
-.handleRight .resizeNode,
-.handleLeft .resizeNode {
-  cursor: ew-resize;
-}
-.handleTop .resizeNode,
-.handleBottom .resizeNode {
-  cursor: ns-resize;
+  right: -10px;
 }

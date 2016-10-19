@@ -100,7 +100,7 @@ class App extends Component {
           key={id}
           style={Object.assign({}, boundingBox, {
             position: "absolute",
-            border: isSelected ? "1px dashed #4DBD33" : "none"
+            border: isSelected ? "1px dashed red" : "none"
           })}
         >
           <div
