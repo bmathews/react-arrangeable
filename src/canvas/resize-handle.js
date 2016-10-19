@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from "react";
-import "./resize-node.css";
+import "./resize.css";
 
-export default class ResizeNode extends Component {
+export default class ResizeHandle extends Component {
   static propTypes = {
     activeMode: PropTypes.string,
     alignBottom: PropTypes.bool,

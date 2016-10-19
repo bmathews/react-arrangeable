@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from "react";
-import ResizeNode from "./resize-node";
+import ResizeHandle from "./resize-handle";
 import MODES from "./modes";
 import { getEventCoordinates, getNodeCenter } from "./utils";
 
@@ -162,12 +162,12 @@ class Resizable extends Component {
     this.props.onResize(newRect);
   }
 
-  getResizeNodes = () => {
+  getResizeHandles = () => {
     return modes.map((mode) => {
       const nodeMode = MODES[mode];
       const alignProp = { [alignPropMap[nodeMode]]: true };
       return (
-        <ResizeNode
+        <ResizeHandle
           {...alignProp}
           key={nodeMode}
           mode={nodeMode}
@@ -182,7 +182,7 @@ class Resizable extends Component {
     return (
       <div style={{ width: "100%", height: "100%", position: "relative" }}>
         {this.props.children}
-        {this.props.isSelected && this.getResizeNodes()}
+        {this.props.isSelected && this.getResizeHandles()}
       </div>
     );
   }

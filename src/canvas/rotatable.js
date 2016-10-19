@@ -1,18 +1,6 @@
 import React, { Component, PropTypes } from "react";
 import { getEventCoordinates, getNodeCenter } from "./utils";
 
-const PI = Math.PI;
-const normalizedAngleMap ={
-  RIGHT: 0,
-  TOP_RIGHT: PI * 0.25,
-  TOP: PI * 0.5,
-  TOP_LEFT: PI * 0.75,
-  LEFT: PI,
-  BOTTOM_RIGHT: PI * -0.25,
-  BOTTOM: PI * -0.5,
-  BOTTOM_LEFT: PI * -0.75
-};
-
 class Rotatable extends Component {
   static displayName = "Rotatable";
 
@@ -22,12 +10,11 @@ class Rotatable extends Component {
     onRotate: PropTypes.func
   };
 
-  startRotate = (e, rotateMode) => {
+  startRotate = (e) => {
     e.preventDefault();
     e.stopPropagation();
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.nodeCenter = getNodeCenter(this.props.getRect());
-    this.rotateMode = rotateMode;
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);
     document.addEventListener("touchmove", this.handleRotate);
@@ -53,14 +40,20 @@ class Rotatable extends Component {
 
     // find angle between mouse position and positive x-axis relative to rotated ResizeNode
     const angle = Math.atan2(diffY, diffX);
-    const rotation = normalizedAngleMap[this.rotateMode] - angle;
-    this.props.onRotate(rotation);
+    this.props.onRotate(angle);
   }
 
   render() {
     return (
       <div style={{ width: "100%", height: "100%", position: "relative" }}>
         {this.props.children}
+        {this.props.isSelected && (
+          <div
+            className="rotateHandle"
+            onMouseDown={this.startRotate}
+            onTouchStart={this.startRotate}
+          />
+        )}
       </div>
     );
   }
