@@ -1,11 +1,6 @@
 import React, { Component } from "react";
 import CanvasElement from "./CanvasElement";
 import "./App.css";
-import * as constraints from "./canvas/constraints";
-import MODES from "./canvas/modes";
-
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 500;
 
 class App extends Component {
   constructor(props) {
@@ -26,96 +21,53 @@ class App extends Component {
         height: 80,
         rotation: 0
       }],
-      selectedIndex: 0,
-      snapLines: [],
-      activeSnapLines: [],
-      scale: 1
+      selectedIndex: 0
     };
 
     this.elementRefs = {};
   }
 
-  runConstraints = (e, originalSize, nextSize, mode) => {
-    const { nodes, scale, selectedIndex, snapLines } = this.state;
-    let constrained = constraints.constrainWidthHeight(nextSize, 30, 30, mode);
-    const results = constraints.constrainGrid(constrained, snapLines, mode);
-    constrained = results.size;
-
-    if (e.shiftKey && mode !== MODES.MOVE) {
-      constrained = constraints.constrainRatio(originalSize, constrained, results.closest, mode);
-    }
-
-    constrained = constraints.constrainCanvasBounds(
-      constrained,
-      CANVAS_WIDTH / scale,
-      CANVAS_HEIGHT / scale,
-      mode
-    );
-
+  handleResize = (newRect) => {
+    const { nodes, selectedIndex } = this.state;
     const clonedNodes = JSON.parse(JSON.stringify(nodes));
     const node = clonedNodes[selectedIndex];
-    clonedNodes[selectedIndex] = { ...node, ...constrained };
-
-    this.setState({
-      activeSnapLines: results.lines,
-      nodes: clonedNodes
-    });
-  }
-
-  getSnapLines = () => {
-    const { nodes, selectedIndex, scale } = this.state;
-    const rects = [];
-
-    nodes.forEach((n, i) => {
-      if (i === selectedIndex) return;
-      rects.push(constraints.getBoundingBox(n));
-    });
-
-    const lines = constraints.rectToSnapLines({
-      top: 0,
-      left: 0,
-      width: CANVAS_WIDTH / scale,
-      height: CANVAS_HEIGHT / scale
-    });
-
-    return lines.concat(constraints.rectsToSnapLines(rects));
-  }
-
-  handleResize = (e, originalSize, nextSize, mode) => {
-    this.runConstraints(e, originalSize, nextSize, mode);
+    node.height = newRect.height;
+    node.width = newRect.width;
+    node.top = newRect.top;
+    node.left = newRect.left;
+    this.setState({ nodes: clonedNodes });
   }
 
   handleResizeStart = () => {
     this.setState({
-      isResizing: true,
-      snapLines: this.getSnapLines(),
-      activeSnapLines: []
+      isResizing: true
     });
   }
 
   handleResizeStop = () => {
     this.setState({
-      isResizing: false,
-      activeSnapLines: []
+      isResizing: false
     });
   }
 
-  handleDrag = (e, originalSize, nextSize, mode) => {
-    this.runConstraints(e, originalSize, nextSize, mode);
+  handleDrag = (newRect) => {
+    const { nodes, selectedIndex } = this.state;
+    const clonedNodes = JSON.parse(JSON.stringify(nodes));
+    const node = clonedNodes[selectedIndex];
+    node.left = newRect.left;
+    node.top = newRect.top;
+    this.setState({ nodes: clonedNodes });
   }
 
   handleDragStart = () => {
     this.setState({
-      isDragging: true,
-      snapLines: this.getSnapLines(),
-      activeSnapLines: []
+      isDragging: true
     });
   }
 
   handleDragStop = () => {
     this.setState({
-      isDragging: false,
-      activeSnapLines: []
+      isDragging: false
     });
   }
 
@@ -136,33 +88,34 @@ class App extends Component {
     this.setState({ nodes: clonedNodes });
   }
 
-  renderSnapLine = (line, i) => {
-    const width = line[1] === 0 ? CANVAS_WIDTH : 1;
-    const height = line[1] === 1 ? CANVAS_HEIGHT : 1;
-    const top = line[1] === 0 ? line[0] : 0;
-    const left = line[1] === 1 ? line[0] : 0;
-    return (
-      <div
-        key={i}
-        style={{
-          width,
-          height,
-          top,
-          left,
-          backgroundColor: "rgba(33,150,243,.2)",
-          position: "absolute"
-        }}
-      />
-    );
+  getBoundingBox = (node) => {
+    const { top, left, width, height, rotation } = node;
+
+    let angle = Math.abs(rotation);
+    if ((angle > PI * 0.5 && angle <= PI) || (angle > PI * 1.5 && angle <= PI * 2)) {
+      angle = PI - angle;
+    }
+
+    const boundingBoxWidth =
+      Math.round(Math.abs(Math.sin(angle) * height + Math.cos(angle) * width));
+    const boundingBoxHeight =
+      Math.round(Math.abs(Math.sin(angle) * width + Math.cos(angle) * height));
+
+    return {
+      height: boundingBoxHeight,
+      left: left - (boundingBoxWidth - width) / 2,
+      top: top - (boundingBoxHeight - height) / 2,
+      width: boundingBoxWidth
+    };
   }
 
   renderNodes = () => {
-    const { nodes, scale, selectedIndex, isResizing, isDragging } = this.state;
+    const { nodes, selectedIndex, isResizing, isDragging } = this.state;
 
     return nodes.map((n, i) => {
       const isSelected = selectedIndex === i;
       const { id, width, height, rotation } = n;
-      const boundingBox = constraints.getBoundingBox(n);
+      const boundingBox = this.getBoundingBox(n);
 
       return (
         <div
@@ -187,7 +140,6 @@ class App extends Component {
               getSize={() => n}
               ref={(el) => { this.elementRefs[id] = el; }}
               elementIndex={i}
-              scale={scale}
               onResize={this.handleResize}
               onResizeStart={this.handleResizeStart}
               onResizeStop={this.handleResizeStop}
@@ -217,7 +169,6 @@ class App extends Component {
         onTouchStart={this.handleBlur}
       >
         {this.renderNodes()}
-        {this.state.activeSnapLines.map(this.renderSnapLine)}
       </div>
     );
   }

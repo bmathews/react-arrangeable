@@ -36,8 +36,7 @@ class Resizable extends Component {
     onResizeStop: PropTypes.func,
     onRotate: PropTypes.func,
     resizeHorizontal: PropTypes.bool,
-    resizeVertical: PropTypes.bool,
-    scale: PropTypes.number.isRequired
+    resizeVertical: PropTypes.bool
   };
 
   static defaultProps = {
@@ -82,8 +81,10 @@ class Resizable extends Component {
   startResize = (e, resizeMode) => {
     e.preventDefault();
     e.stopPropagation();
+    this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.startMousePosition = this.getEventCoordinates(e);
     this.sizeAtStart = this.props.getSize();
+    this.nodeCenter = this.getNodeCenter();
     document.addEventListener("mousemove", this.handleMouseMove);
     document.addEventListener("mouseup", this.stopResize);
     document.addEventListener("touchmove", this.handleMouseMove);
@@ -106,9 +107,8 @@ class Resizable extends Component {
   startRotate = (e, rotateMode) => {
     e.preventDefault();
     e.stopPropagation();
-    this.startMousePosition = this.getEventCoordinates(e);
     this.canvasPosition = document.getElementById("app").getBoundingClientRect();
-    this.pivotPoint = this.getNodeCenter();
+    this.nodeCenter = this.getNodeCenter();
     this.rotateMode = rotateMode;
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);
@@ -126,12 +126,12 @@ class Resizable extends Component {
   }
 
   handleRotate = (e) => {
-    /// get mouse position
+    // get mouse position
     const { x: mouseX, y: mouseY } = this.getEventCoordinates(e);
 
-    // find x/y distances between pivot point and mouse position
-    const diffX = mouseX - (this.pivotPoint.x + this.canvasPosition.left);
-    const diffY = (this.canvasPosition.top + this.pivotPoint.y) - mouseY;
+    // find x/y distances between center/pivot point and mouse position
+    const diffX = mouseX - (this.nodeCenter.x + this.canvasPosition.left);
+    const diffY = (this.canvasPosition.top + this.nodeCenter.y) - mouseY;
 
     // find angle between mouse position and positive x-axis relative to rotated ResizeNode
     const angle = Math.atan2(diffY, diffX);
@@ -150,47 +150,105 @@ class Resizable extends Component {
   handleMouseMove = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     const { resizeMode } = this.state;
-    const { scale } = this.props;
+    const isEdge = resizeMode.indexOf("_") < 0;
 
-    const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
+    // get original and current mouse positions
+    const { x: startX, y: startY } = this.startMousePosition;
+    const { x: mouseX, y: mouseY } = this.getEventCoordinates(e);
 
-    // Determine whether we can resize horizontally and vertically
-    const resizingHorizontally = resizeMode !== MODES.TOP && resizeMode !== MODES.BOTTOM;
-    const resizingVertically = resizeMode !== MODES.LEFT && resizeMode !== MODES.RIGHT;
+    // find x/y distances between center/pivot point and mouse position
+    const diffX = startX - (this.nodeCenter.x + this.canvasPosition.left);
+    const diffY = (this.canvasPosition.top + this.nodeCenter.y) - startY;
 
-    // Capture deltas for top/left/width/height
-    const targetSize = {
-      ...this.sizeAtStart
-    };
+    // clone start rectangle
+    const rect = { ...this.sizeAtStart };
 
-    // Determine horizontal deltas
-    if (resizingHorizontally) {
-      if ([MODES.TOP_LEFT, MODES.LEFT, MODES.BOTTOM_LEFT].indexOf(resizeMode) > -1) {
-        targetSize.left += (clientX - this.startMousePosition.x) / scale;
-        targetSize.width -= (clientX - this.startMousePosition.x) / scale;
+    // calculate distance and angle between original and current mouse positions
+    const length = Math.sqrt(Math.pow(mouseX - startX, 2) + Math.pow(mouseY - startY, 2));
+    const angle = Math.atan2(diffY, diffX);
+
+    let heightDiff = 0;
+    let widthDiff = 0;
+    let topDiff = 0;
+    let leftDiff = 0;
+
+    // calculate position diffs of new rectangle
+    if (rect.rotation === 0) {
+      if (isEdge) {
+        if (angle > PI * 0.25 && angle < PI * 0.75) { // top
+          heightDiff = startY - mouseY;
+          topDiff = -heightDiff;
+        } else if ((angle > PI * 0.75 && angle < PI) || (angle > PI * -1 && angle < PI * -0.75)) { // left
+          widthDiff = startX - mouseX;
+          leftDiff = -widthDiff;
+        } else if (angle > PI * -0.75 && angle < -0.25) { // bottom
+          heightDiff = mouseY - startY;
+        } else if ((angle > PI * -0.25 && angle < 0) || (angle > 0 && angle < PI * 0.25)) { // right
+          widthDiff = mouseX - startX;
+        }
       } else {
-        targetSize.width += (clientX - this.startMousePosition.x) / scale;
+        if (angle > 0 && angle <= PI * 0.5) { // topRight
+          heightDiff = startY - mouseY;
+          widthDiff = mouseX - startX;
+          topDiff = -heightDiff;
+        } else if (angle > 0.5 && angle <= PI) { // topLeft
+          heightDiff = startY - mouseY;
+          widthDiff = startX - mouseX;
+          topDiff = -heightDiff;
+          leftDiff = -widthDiff;
+        } else if (angle > PI * -1 && angle <= PI * -0.5) { // bottomLeft
+          heightDiff = mouseY - startY;
+          widthDiff = startX - mouseX;
+          leftDiff = -widthDiff;
+        } else if (angle > PI * -0.5 && angle <= 0) { // bottomRight
+          heightDiff = mouseY - startY;
+          widthDiff = mouseX - startX;
+        }
+      }
+    } else {
+      if (resizeMode === MODES.RIGHT) {
+        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+          widthDiff = length * (mouseX > startX ? 1 : -1);
+          topDiff = mouseY > startY;
+        } else {
+          widthDiff = length * (startX > mouseX ? 1 : -1);
+          leftDiff = -widthDiff;
+        }
+      } else if (resizeMode === MODES.LEFT) {
+        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+          widthDiff = length * (startX > mouseX ? 1 : -1);
+          leftDiff = -widthDiff;
+        } else {
+          widthDiff = length * (mouseX > startX ? 1 : -1);
+        }
+      } else if (resizeMode === MODES.TOP) {
+        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+          heightDiff = length * (startY > mouseY ? 1 : -1);
+          topDiff = -heightDiff;
+        } else {
+          heightDiff = length * (mouseY > startY ? 1 : -1);
+        }
+      } else if (resizeMode === MODES.BOTTOM) {
+        if (rect.rotation > PI * -0.5 && rect.rotation < PI * 0.5) {
+          heightDiff = length * (mouseY > startY ? 1 : -1);
+        } else {
+          heightDiff = length * (startY > mouseY ? 1 : -1);
+          topDiff = -heightDiff;
+        }
+      } else {
+        console.log("height&width");
+        // heightDiff = Math.sin(rect.rotation) * length;
+        // widthDiff = Math.cos(rect.rotation) * length;
       }
     }
 
-    // Determine vertical deltas
-    if (resizingVertically) {
-      if ([MODES.TOP_LEFT, MODES.TOP, MODES.TOP_RIGHT].indexOf(resizeMode) > -1) {
-        targetSize.top += (clientY - this.startMousePosition.y) / scale;
-        targetSize.height -= (clientY - this.startMousePosition.y) / scale;
-      } else {
-        targetSize.height += (clientY - this.startMousePosition.y) / scale;
-      }
-    }
+    rect.height += heightDiff;
+    rect.width += widthDiff;
+    rect.top += topDiff;
+    rect.left += leftDiff;
 
-    this.resizeTo(e, targetSize);
-  }
-
-  resizeTo(e, rect) {
-    this.props.onResize(e, this.sizeAtStart, rect, this.state.resizeMode);
+    this.props.onResize(rect);
   }
 
   getResizeNodes = (nodeModes) => {
@@ -205,7 +263,6 @@ class Resizable extends Component {
           activeMode={this.state.resizeMode}
           onResize={this.startResize}
           onRotate={this.startRotate}
-          scale={this.props.scale}
         />
       );
     });

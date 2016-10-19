@@ -5,7 +5,6 @@ class Draggable extends Component {
   static displayName = "Draggable";
   static propTypes = {
     draggable: PropTypes.bool,
-    scale: PropTypes.number.isRequired,
     onDrag: PropTypes.func,
     onDragStart: PropTypes.func,
     onDragStop: PropTypes.func,
@@ -23,14 +22,8 @@ class Draggable extends Component {
     y: e.touches ? e.touches[0].clientY : e.clientY
   })
 
-  /*
-   * Beging dragging. Store dragStartTime, which is used to prevent
-   * unintentional drags
-   */
-
   startDrag = (e) => {
     if (!this.props.draggable) return;
-
     this.dragStartTime = Date.now();
     this.startMousePosition = this.getEventCoordinates(e);
     this.sizeAtStart = this.props.getSize();
@@ -40,14 +33,9 @@ class Draggable extends Component {
     document.addEventListener("touchend", this.stopDrag);
   }
 
-  /*
-   * Stop dragging
-   */
-
   stopDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     document.removeEventListener("mousemove", this.handleMouseMove);
     document.removeEventListener("mouseup", this.stopDrag);
     document.removeEventListener("touchmove", this.handleMouseMove);
@@ -64,11 +52,6 @@ class Draggable extends Component {
     this.startDrag(e);
   }
 
-  /*
-   * Handle mouse move.
-   * We wait for 100ms and a delta >= 1 before emitting onDragStart
-   */
-
   handleMouseMove = (e) => {
     e.preventDefault();
     const coords = this.getEventCoordinates(e);
@@ -79,23 +62,15 @@ class Draggable extends Component {
     } else if (!this.dragStartTime) {
       e.stopPropagation();
       const targetSize = { ...this.sizeAtStart };
-      targetSize.left += (coords.x - this.startMousePosition.x) / this.props.scale;
-      targetSize.top += (coords.y - this.startMousePosition.y) / this.props.scale;
-      this.moveTo(e, targetSize);
+      targetSize.left += (coords.x - this.startMousePosition.x);
+      targetSize.top += (coords.y - this.startMousePosition.y);
+      this.moveTo(targetSize);
     }
   }
 
-  /*
-   * Emit onDrag
-   */
-
-  moveTo(e, rect) {
-    this.props.onDrag(e, this.sizeAtStart, rect, MODES.MOVE);
+  moveTo(rect) {
+    this.props.onDrag(rect);
   }
-
-  /*
-   * Render
-   */
 
   render() {
     return (

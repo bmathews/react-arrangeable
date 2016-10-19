@@ -14,8 +14,7 @@ export default class ResizeNode extends Component {
     cornerTopRight: PropTypes.bool,
     mode: PropTypes.string,
     onResize: PropTypes.func,
-    onRotate: PropTypes.func,
-    scale: PropTypes.number
+    onRotate: PropTypes.func
   };
 
   renderCornerIcon(props) {
@@ -51,8 +50,7 @@ export default class ResizeNode extends Component {
       cornerTopRight,
       cornerBottomRight,
       cornerBottomLeft,
-      mode,
-      scale
+      mode
     } = this.props;
 
     const resolvedClassNames = [
@@ -76,8 +74,7 @@ export default class ResizeNode extends Component {
         onTouchStart={this.handleRotate}
         style={{
           backgroundColor: "rgba(77, 189, 51, 0.5)",
-          padding: 16,
-          transform: `scale(${1 / scale})`,
+          padding: 16
         }}
       >
         <div
