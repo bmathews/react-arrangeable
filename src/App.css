@@ -55,7 +55,7 @@ body {
 
 .rotateHandle::before {
   content: "";
-  cursor: move;
+  cursor: crosshair;
   background-color: #007CA5;
   border: 2px solid white;
   border-radius: 8px;
