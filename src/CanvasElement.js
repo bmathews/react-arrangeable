@@ -13,13 +13,37 @@ class CanvasElement extends Component {
     onRotate: PropTypes.func
   };
 
+  constructor(props) {
+    super(props);
+    this.state = { isResizing: false };
+  }
+
+  handleResize = (newRect, isResizing) => {
+    this.setState({ isResizing });
+
+    if (isResizing) {
+      this.props.onResize(newRect);
+    }
+  }
+
   render() {
-    const { children, onDrag, onResize, onRotate, ...otherProps } = this.props;
+    const { children, onDrag, onRotate, ...otherProps } = this.props;
+    delete otherProps.onResize;
 
     return (
-      <Rotatable onRotate={onRotate} {...otherProps}>
-        <Resizable onResize={onResize} {...otherProps}>
-          <Draggable onDrag={onDrag} {...otherProps}>
+      <Rotatable
+        onRotate={onRotate}
+        hideHandle={this.state.isResizing}
+        {...otherProps}
+      >
+        <Resizable
+          onResize={this.handleResize}
+          {...otherProps}
+        >
+          <Draggable
+            onDrag={onDrag}
+            {...otherProps}
+          >
             {children}
           </Draggable>
         </Resizable>

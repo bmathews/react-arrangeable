@@ -3,7 +3,8 @@ import ResizeHandle from "./resize-handle";
 import MODES from "./modes";
 import { getEventCoordinates } from "./utils";
 
-const alignPropMap ={
+const PI = Math.PI;
+const alignPropMap = {
   TOP: "alignTop",
   RIGHT: "alignRight",
   BOTTOM: "alignBottom",
@@ -13,9 +14,7 @@ const alignPropMap ={
   BOTTOM_RIGHT: "cornerBottomRight",
   BOTTOM_LEFT: "cornerBottomLeft"
 };
-
-const PI = Math.PI;
-const modes = ["RIGHT", "LEFT", "TOP", "BOTTOM", "TOP_LEFT", "TOP_RIGHT", "BOTTOM_RIGHT", "BOTTOM_LEFT"];
+const modes = Object.keys(alignPropMap);
 
 class Resizable extends Component {
   static displayName = "Resizable";
@@ -29,9 +28,7 @@ class Resizable extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      resizeMode: null
-    };
+    this.state = { resizeMode: null };
   }
 
   startResize = (e, resizeMode) => {
@@ -45,6 +42,7 @@ class Resizable extends Component {
     document.addEventListener("touchmove", this.handleMouseMove);
     document.addEventListener("touchend", this.stopResize);
     this.setState({ resizeMode });
+    this.props.onResize(this.startRect, true);
   }
 
   stopResize = (e) => {
@@ -55,6 +53,7 @@ class Resizable extends Component {
     document.removeEventListener("touchmove", this.handleMouseMove);
     document.removeEventListener("touchend", this.stopResize);
     this.setState({ resizeMode: null });
+    this.props.onResize(null, false);
   }
 
   handleMouseMove = (e) => {
@@ -158,19 +157,20 @@ class Resizable extends Component {
     newRect.y += topDiff;
     newRect.x += leftDiff;
 
-    this.props.onResize(newRect);
+    this.props.onResize(newRect, true);
   }
 
   getResizeHandles = () => {
-    return modes.map((mode) => {
-      const nodeMode = MODES[mode];
-      const alignProp = { [alignPropMap[nodeMode]]: true };
+    const { resizeMode } = this.state;
+    return modes.map((mode, i) => {
+      const alignProp = { [alignPropMap[mode]]: true };
       return (
         <ResizeHandle
           {...alignProp}
-          key={nodeMode}
-          mode={nodeMode}
-          activeMode={this.state.resizeMode}
+          key={i}
+          ref={mode}
+          mode={mode}
+          isActive={!resizeMode || resizeMode === mode}
           onResize={this.startResize}
         />
       );

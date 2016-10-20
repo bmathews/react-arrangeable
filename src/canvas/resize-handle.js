@@ -3,7 +3,6 @@ import "./resize.css";
 
 export default class ResizeHandle extends Component {
   static propTypes = {
-    activeMode: PropTypes.string,
     alignBottom: PropTypes.bool,
     alignLeft: PropTypes.bool,
     alignRight: PropTypes.bool,
@@ -12,6 +11,7 @@ export default class ResizeHandle extends Component {
     cornerBottomRight: PropTypes.bool,
     cornerTopLeft: PropTypes.bool,
     cornerTopRight: PropTypes.bool,
+    isActive: PropTypes.bool,
     mode: PropTypes.string,
     onResize: PropTypes.func
   };
@@ -22,7 +22,6 @@ export default class ResizeHandle extends Component {
 
   render() {
     const {
-      activeMode,
       alignTop,
       alignRight,
       alignBottom,
@@ -31,7 +30,7 @@ export default class ResizeHandle extends Component {
       cornerTopRight,
       cornerBottomRight,
       cornerBottomLeft,
-      mode
+      isActive
     } = this.props;
 
     const resolvedClassNames = [
@@ -46,7 +45,7 @@ export default class ResizeHandle extends Component {
       cornerBottomRight && "cornerBottomRight"
     ].join(" ");
 
-    if (activeMode && activeMode !== mode) return null;
+    if (!isActive) return null;
 
     return (
       <div

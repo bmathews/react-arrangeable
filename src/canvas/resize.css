@@ -7,31 +7,31 @@
 
 .handle::before {
   content: "";
-  background: #fff;
-  border: 1px solid #2196F3;
-  box-sizing: border-box;
-  height: 9px;
+  background: #007CA5;
+  border: 2px solid white;
+  border-radius: 8px;
+  height: 10px;
   left: 50%;
   position: absolute;
-  margin-left: -4px;
-  margin-top: -4px;
+  margin-left: -6px;
+  margin-top: -6px;
   top: 50%;
-  width: 9px;
+  width: 10px;
 }
 
 .handleLeft {
   cursor: ew-resize;
   left: 0;
-  margin-left: -10px;
-  margin-top: -10px;
+  margin-left: -12px;
+  margin-top: -12px;
   top: 50%;
 }
 
 .handleTop {
   cursor: ns-resize;
   left: 50%;
-  margin-left: -10px;
-  margin-top: -10px;
+  margin-left: -12px;
+  margin-top: -12px;
   top: 0;
 }
 
@@ -39,38 +39,38 @@
   bottom: 0;
   cursor: ns-resize;
   left: 50%;
-  margin-left: -10px;
-  margin-bottom: -10px;
+  margin-left: -12px;
+  margin-bottom: -12px;
 }
 
 .handleRight {
   cursor: ew-resize;
-  margin-right: -10px;
-  margin-top: -10px;
+  margin-right: -12px;
+  margin-top: -12px;
   right: 0;
   top: 50%;
 }
 
 .cornerTopLeft {
   cursor: nwse-resize;
-  left: -10px;
-  top: -10px;
+  left: -11px;
+  top: -11px;
 }
 
 .cornerTopRight {
   cursor: nesw-resize;
-  right: -10px;
-  top: -10px;
+  right: -11px;
+  top: -11px;
 }
 
 .cornerBottomLeft {
-  bottom: -10px;
+  bottom: -11px;
   cursor: nesw-resize;
-  left: -10px;
+  left: -11px;
 }
 
 .cornerBottomRight {
-  bottom: -10px;
+  bottom: -11px;
   cursor: nwse-resize;
-  right: -10px;
+  right: -11px;
 }
