@@ -83,8 +83,10 @@ class Resizable extends Component {
     // calculate mouse offset
     let dx = mouseX - this.startMousePosition.x;
     let dy = mouseY - this.startMousePosition.y;
-    dx = dx * _cos + dy * _sin;
-    dy = dy * _cos - dx * _sin;
+    const ndx = dx * _cos + dy * _sin;
+    const ndy = dy * _cos - dx * _sin;
+    dx = ndx;
+    dy = ndy;
 
     // find horizontal deltas
     if (resizingHorizontally) {
@@ -116,8 +118,8 @@ class Resizable extends Component {
 
     // calculate the correct position offset based on angle
     const offset = this.getCorrection(startWidth, startHeight, delta.width, delta.height, angle);
-    const newLeft = delta.left * _cos - delta.top * _sin;
-    const newTop = delta.top * _cos + delta.left * _sin;
+    const newLeft = Math.round(delta.left * _cos - delta.top * _sin);
+    const newTop = Math.round(delta.top * _cos + delta.left * _sin);
     newRect.left = startLeft;
     newRect.top = startTop;
     newRect.left += newLeft;
