@@ -34,12 +34,12 @@ class Rotatable extends Component {
     // get mouse position
     const { x: mouseX, y: mouseY } = getEventCoordinates(e);
 
-    // find x/y distances between center/pivot point and mouse position
-    const diffX = mouseX - (this.startRect.x + this.canvasPosition.left);
-    const diffY = (this.canvasPosition.top + this.startRect.y) - mouseY;
+    // find x/y distances between node center and mouse position
+    const diffX = mouseX - this.canvasPosition.left - this.startRect.x;
+    const diffY = mouseY - this.canvasPosition.top - this.startRect.y;
 
-    // find angle between mouse position and positive x-axis relative to rotated ResizeNode
-    const angle = Math.atan2(diffY, diffX);
+    // find angle between node center and mouse position and convert from radians to degrees
+    const angle = Math.round(Math.atan2(diffY, diffX) * 180 / Math.PI);
     this.props.onRotate(angle);
   }
 

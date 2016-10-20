@@ -7,6 +7,7 @@ class CanvasElement extends Component {
   static propTypes = {
     children: PropTypes.node,
     getRect: PropTypes.func,
+    elementIndex: PropTypes.number,
     isSelected: PropTypes.bool,
     onDrag: PropTypes.func,
     onResize: PropTypes.func,
@@ -14,11 +15,11 @@ class CanvasElement extends Component {
   };
 
   render() {
-    const { children, onDrag, onResize, onRotate, ...otherProps } = this.props;
+    const { children, elementIndex, onDrag, onResize, onRotate, ...otherProps } = this.props;
 
     return (
       <Rotatable onRotate={onRotate} {...otherProps}>
-        <Resizable onResize={onResize} {...otherProps}>
+        <Resizable elementIndex={elementIndex} onResize={onResize} {...otherProps}>
           <Draggable onDrag={onDrag} {...otherProps}>
             {children}
           </Draggable>

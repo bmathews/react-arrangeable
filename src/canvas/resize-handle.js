@@ -15,7 +15,7 @@ export default class ResizeHandle extends Component {
     onResize: PropTypes.func
   };
 
-  handleResize = e => {
+  handleResize = (e) => {
     this.props.onResize(e, this.props.mode);
   }
 

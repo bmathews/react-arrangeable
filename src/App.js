@@ -49,11 +49,11 @@ class App extends Component {
     this.setState({ selectedIndex: null });
   }
 
-  handleRotate = (radians) => {
+  handleRotate = (angle) => {
     const { nodes, selectedIndex } = this.state;
     const clonedNodes = JSON.parse(JSON.stringify(nodes));
     const node = clonedNodes[selectedIndex];
-    node.rotation = radians;
+    node.rotation = angle;
     this.setState({ nodes: clonedNodes });
   }
 
@@ -65,13 +65,14 @@ class App extends Component {
       return (
         <div
           key={id}
+          id={`Node-${i}`}
           onMouseDown={this.handleMouseDown.bind(null, i)}
           className={`${isSelected ? "selected" : ""} Node`}
           style={{
             height,
             left: x - width / 2,
             top: y - height / 2,
-            transform: `rotateZ(${rotation * -180 / Math.PI}deg)`,
+            transform: `rotateZ(${rotation}deg)`,
             width
           }}
         >
