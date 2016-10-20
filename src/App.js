@@ -8,8 +8,8 @@ class App extends Component {
     this.state = {
       nodes: [{
         id: 1,
-        x: 200,
-        y: 200,
+        x: 100,
+        y: 100,
         height: 300,
         width: 300,
         rotation: 0
@@ -65,7 +65,6 @@ class App extends Component {
       return (
         <div
           key={id}
-          id={`Node-${i}`}
           onMouseDown={this.handleMouseDown.bind(null, i)}
           className={`${isSelected ? "selected" : ""} Node`}
           style={{
@@ -79,7 +78,6 @@ class App extends Component {
           <CanvasElement
             ref={(el) => { this.elementRefs[id] = el; }}
             getRect={() => n}
-            elementIndex={i}
             isSelected={isSelected}
             onDrag={this.handleDrag}
             onResize={this.handleResize}
