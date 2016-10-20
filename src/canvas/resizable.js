@@ -74,7 +74,7 @@ class Resizable extends Component {
     } = this.startRect;
 
     // convert angle from degrees to radians
-    const angle = rotation * Math.PI / 180;
+    const angle = Math.abs(rotation * Math.PI / 180);
     const _cos = Math.cos(angle);
     const _sin = Math.sin(angle);
 
