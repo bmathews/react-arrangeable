@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from "react";
 import ResizeHandle from "./resize-handle";
 import { getEventCoordinates } from "./utils";
+import MODES from './modes';
 
 const alignPropMap = {
   TOP: "alignTop",
@@ -59,47 +60,117 @@ class Resizable extends Component {
     e.preventDefault();
     e.stopPropagation();
 
-    // clone start rectangle
-    const newRect = { ...this.startRect };
-
     // get mouse position
-    const { x: mouseX, y: mouseY } = getEventCoordinates(e);
+    const { x: clientX, y: clientY } = getEventCoordinates(e);
 
-    const {
-      rotation,
-      height: startHeight,
-      width: startWidth,
-      x: startX,
-      y: startY,
-    } = this.startRect;
+    // Determine whether we can resize horizontally and vertically
+    const resizingHorizontally = this.state.resizeMode !== MODES.TOP &&
+                                 this.state.resizeMode !== MODES.BOTTOM;
 
-    // convert angle from degrees to radians
-    const angle = Math.abs(rotation * Math.PI / 180);
-    const _cos = Math.cos(angle);
-    const _sin = Math.sin(angle);
+    const resizingVertically = this.state.resizeMode !== MODES.LEFT &&
+                               this.state.resizeMode !== MODES.RIGHT;
 
-    // find x/y distances between original and current mouse positions
-    let dragX = mouseX - this.startMousePosition.x;
-    let dragY = mouseY - this.startMousePosition.y;
-    dragX = dragX * _cos + dragY * _sin;
-    dragY = dragY * _cos + dragX * _sin;
+    // Capture deltas for top/left/width/height
+    const data = {
+      ...this.startRect
+    };
 
-    // find dimensions of resized rectangle before rotation
-    const newWidth = startWidth + dragX;
-    const newHeight = startHeight + dragY;
+    const angle = this.startRect.rotation;
 
-    // find dimensions of resized rectangle after rotation
-    const newOuterWidth = Math.round(newWidth * _cos + newHeight  * _sin);
-    const newOuterHeight = Math.round(newHeight * _cos + newWidth * _sin);
-    const newX = startX + (newOuterWidth - this.boundingBox.width) / 2;
-    const newY = startY + (newOuterHeight - this.boundingBox.height) / 2;
+    const angle_rad = angle * Math.PI / 180;
 
-    newRect.x = newX;
-    newRect.y = newY;
-    newRect.height = newHeight;
-    newRect.width = newWidth;
+    //patch: cache cosine & sine
+    const _cos = Math.cos(angle_rad);
+    const _sin = Math.sin(angle_rad)
 
-    this.props.onResize(newRect);
+    let dx = clientX - this.startMousePosition.x;
+    let dy = clientY - this.startMousePosition.y;
+
+    //patch: calculate the corect mouse offset for a more natural feel
+    const ndx = dx * _cos + dy * _sin;
+    const ndy = dy * _cos - dx * _sin;
+
+    dx = ndx;
+    dy = ndy;
+
+    // Determine horizontal deltas
+    if (resizingHorizontally) {
+      if (this.state.resizeMode === MODES.TOP_LEFT || this.state.resizeMode === MODES.LEFT || this.state.resizeMode === MODES.BOTTOM_LEFT) {
+        // horizontal, left side
+        data.x += dx;
+        data.width -= dx;
+      } else {
+        data.width += dx;
+      }
+    }
+
+    // Determine vertical deltas
+    if (resizingVertically) {
+      if (this.state.resizeMode === MODES.TOP_LEFT || this.state.resizeMode === MODES.TOP || this.state.resizeMode === MODES.TOP_RIGHT) {
+        // vertical, top side
+        data.y += dy;
+        data.height -= dy;
+      } else {
+        data.height += dy;
+      }
+    }
+
+    //patch: difference between datas
+    const diffData = {
+      x: data.x - this.startRect.x,
+      y: data.y - this.startRect.y,
+      width: data.width - this.startRect.width,
+      height: data.height - this.startRect.height,
+    }
+
+    //patch: calculate the correct position offset based on angle
+    const newData = {};
+    newData.x = Math.round(diffData.x * _cos - diffData.y * _sin);
+    newData.y = Math.round(diffData.y * _cos + diffData.x * _sin);
+
+    data.x = this.startRect.x;
+    data.y = this.startRect.y;
+
+    data.x += newData.x;
+    data.y += newData.y;
+
+    //patch: calculate the difference in size
+    const diff_w = diffData.width;
+    const diff_h = diffData.height;
+
+    // get correction
+    function getCorrection(init_w, init_h, delta_w, delta_h, angle) {
+      //Convert angle from degrees to radians
+      var angle = angle * Math.PI / 180
+
+      //Get position after rotation with original size
+      var x = -init_w/2;
+      var y = init_h/2;
+      var new_x = y * Math.sin(angle) + x * Math.cos(angle);
+      var new_y = y * Math.cos(angle) - x * Math.sin(angle);
+      var diff1 = {x: new_x - x, y: new_y - y};
+
+      var new_width = init_w + delta_w;
+      var new_height = init_h + delta_h;
+
+      //Get position after rotation with new size
+      var x = -new_width/2;
+      var y = new_height/2;
+      var new_x = y * Math.sin(angle) + x * Math.cos(angle);
+      var new_y = y * Math.cos(angle) - x * Math.sin(angle);
+      var diff2 = {x: new_x - x, y: new_y - y};
+
+      //Get the difference between the two positions
+      var offset = {x: diff2.x - diff1.x, y: diff2.y - diff1.y};
+      return offset;
+    }
+
+    const offset = getCorrection(this.startRect.width, this.startRect.height, diff_w, diff_h, angle);
+
+    data.x -= offset.x;
+    data.y += offset.y;
+
+    this.props.onResize(data);
   }
 
   getResizeHandles = () => {

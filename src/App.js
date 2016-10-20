@@ -69,11 +69,11 @@ class App extends Component {
           onMouseDown={this.handleMouseDown.bind(null, i)}
           className={`${isSelected ? "selected" : ""} Node`}
           style={{
+            left: x,
+            top: y,
             height,
-            left: x - width / 2,
-            top: y - height / 2,
-            transform: `rotateZ(${rotation}deg)`,
-            width
+            width,
+            transform: `rotateZ(${rotation}deg)`
           }}
         >
           <CanvasElement

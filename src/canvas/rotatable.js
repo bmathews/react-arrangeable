@@ -35,8 +35,8 @@ class Rotatable extends Component {
     const { x: mouseX, y: mouseY } = getEventCoordinates(e);
 
     // find x/y distances between node center and mouse position
-    const diffX = mouseX - this.canvasPosition.left - this.startRect.x;
-    const diffY = mouseY - this.canvasPosition.top - this.startRect.y;
+    const diffX = mouseX - this.canvasPosition.left - this.startRect.x - (this.startRect.width / 2);
+    const diffY = mouseY - this.canvasPosition.top - this.startRect.y - (this.startRect.height / 2);
 
     // find angle between node center and mouse position and convert from radians to degrees
     const angle = Math.round(Math.atan2(diffY, diffX) * 180 / Math.PI);
