@@ -8,8 +8,8 @@ class App extends Component {
     this.state = {
       nodes: [{
         id: 1,
-        x: 100,
-        y: 100,
+        left: 100,
+        top: 100,
         height: 300,
         width: 300,
         rotation: 0
@@ -26,8 +26,8 @@ class App extends Component {
     const node = clonedNodes[selectedIndex];
     node.height = newRect.height;
     node.width = newRect.width;
-    node.x = newRect.x;
-    node.y = newRect.y;
+    node.left = newRect.left;
+    node.top = newRect.top;
     this.setState({ nodes: clonedNodes });
   }
 
@@ -35,8 +35,8 @@ class App extends Component {
     const { nodes, selectedIndex } = this.state;
     const clonedNodes = JSON.parse(JSON.stringify(nodes));
     const node = clonedNodes[selectedIndex];
-    node.x = newRect.x;
-    node.y = newRect.y;
+    node.left = newRect.left;
+    node.top = newRect.top;
     this.setState({ nodes: clonedNodes });
   }
 
@@ -60,7 +60,7 @@ class App extends Component {
   renderNodes = () => {
     return this.state.nodes.map((n, i) => {
       const isSelected = this.state.selectedIndex === i;
-      const { id, height, x, rotation, y, width } = n;
+      const { id, height, left, rotation, top, width } = n;
 
       return (
         <div
@@ -68,8 +68,8 @@ class App extends Component {
           onMouseDown={this.handleMouseDown.bind(null, i)}
           className={`${isSelected ? "selected" : ""} Node`}
           style={{
-            left: x,
-            top: y,
+            left,
+            top,
             height,
             width,
             transform: `rotateZ(${rotation}deg)`

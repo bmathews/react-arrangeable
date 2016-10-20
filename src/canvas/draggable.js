@@ -34,8 +34,8 @@ class Draggable extends Component {
     e.stopPropagation();
     const currentMousePosition = getEventCoordinates(e);
     const newRect = { ...this.startRect };
-    newRect.x += (currentMousePosition.x - this.startMousePosition.x);
-    newRect.y += (currentMousePosition.y - this.startMousePosition.y);
+    newRect.left += (currentMousePosition.x - this.startMousePosition.x);
+    newRect.top += (currentMousePosition.y - this.startMousePosition.y);
     this.props.onDrag(newRect);
   }
 

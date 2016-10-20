@@ -62,8 +62,8 @@ class Resizable extends Component {
     const newRect = {...this.startRect};
     const {
       rotation,
-      x: startX,
-      y: startY,
+      left: startLeft,
+      top: startTop,
       height: startHeight,
       width: startWidth
     } = this.startRect;
@@ -89,7 +89,7 @@ class Resizable extends Component {
     // find horizontal deltas
     if (resizingHorizontally) {
       if ([MODES.TOP_LEFT, MODES.LEFT, MODES.BOTTOM_LEFT].indexOf(resizeMode) > -1) { // left side
-        newRect.x += dx;
+        newRect.left += dx;
         newRect.width -= dx;
       } else {
         newRect.width += dx;
@@ -99,7 +99,7 @@ class Resizable extends Component {
     // find vertical deltas
     if (resizingVertically) {
       if ([MODES.TOP_LEFT, MODES.TOP, MODES.TOP_RIGHT].indexOf(resizeMode) > -1) { // top side
-        newRect.y += dy;
+        newRect.top += dy;
         newRect.height -= dy;
       } else {
         newRect.height += dy;
@@ -108,23 +108,22 @@ class Resizable extends Component {
 
     // get diffs between newRect and startRect
     const delta = {
-      x: newRect.x - startX,
-      y: newRect.y - startY,
+      left: newRect.left - startLeft,
+      top: newRect.top - startTop,
       height: newRect.height - startHeight,
       width: newRect.width - startWidth
     };
 
     // calculate the correct position offset based on angle
     const offset = this.getCorrection(startWidth, startHeight, delta.width, delta.height, angle);
-    const newX = delta.x * _cos - delta.y * _sin;
-    const newY = delta.y * _cos + delta.x * _sin;
-    newRect.x = startX;
-    newRect.y = startY;
-    newRect.x += newX;
-    newRect.y += newY;
-
-    newRect.x -= offset.x;
-    newRect.y += offset.y;
+    const newLeft = delta.left * _cos - delta.top * _sin;
+    const newTop = delta.top * _cos + delta.left * _sin;
+    newRect.left = startLeft;
+    newRect.top = startTop;
+    newRect.left += newLeft;
+    newRect.top += newTop;
+    newRect.left -= offset.x;
+    newRect.top += offset.y;
 
     this.props.onResize(newRect);
   }
