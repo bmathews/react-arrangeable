@@ -7,7 +7,6 @@ class Rotatable extends Component {
   static propTypes = {
     children: PropTypes.node,
     getRect: PropTypes.func,
-    hideHandle: PropTypes.bool,
     onRotate: PropTypes.func
   };
 
@@ -45,12 +44,10 @@ class Rotatable extends Component {
   }
 
   render() {
-    const { children, hideHandle, isSelected } = this.props;
-
     return (
       <div style={{ width: "100%", height: "100%", position: "relative" }}>
-        {children}
-        {(isSelected && !hideHandle) && (
+        {this.props.children}
+        {this.props.isSelected && (
           <div
             className="rotateHandle"
             onMouseDown={this.startRotate}

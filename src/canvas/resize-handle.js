@@ -11,7 +11,6 @@ export default class ResizeHandle extends Component {
     cornerBottomRight: PropTypes.bool,
     cornerTopLeft: PropTypes.bool,
     cornerTopRight: PropTypes.bool,
-    isActive: PropTypes.bool,
     mode: PropTypes.string,
     onResize: PropTypes.func
   };
@@ -29,8 +28,7 @@ export default class ResizeHandle extends Component {
       cornerTopLeft,
       cornerTopRight,
       cornerBottomRight,
-      cornerBottomLeft,
-      isActive
+      cornerBottomLeft
     } = this.props;
 
     const resolvedClassNames = [
@@ -44,8 +42,6 @@ export default class ResizeHandle extends Component {
       cornerBottomLeft && "cornerBottomLeft",
       cornerBottomRight && "cornerBottomRight"
     ].join(" ");
-
-    if (!isActive) return null;
 
     return (
       <div

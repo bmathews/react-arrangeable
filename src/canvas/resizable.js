@@ -42,7 +42,6 @@ class Resizable extends Component {
     document.addEventListener("touchmove", this.handleMouseMove);
     document.addEventListener("touchend", this.stopResize);
     this.setState({ resizeMode });
-    this.props.onResize(this.startRect, true);
   }
 
   stopResize = (e) => {
@@ -53,7 +52,6 @@ class Resizable extends Component {
     document.removeEventListener("touchmove", this.handleMouseMove);
     document.removeEventListener("touchend", this.stopResize);
     this.setState({ resizeMode: null });
-    this.props.onResize(null, false);
   }
 
   handleMouseMove = (e) => {
@@ -157,11 +155,10 @@ class Resizable extends Component {
     newRect.y += topDiff;
     newRect.x += leftDiff;
 
-    this.props.onResize(newRect, true);
+    this.props.onResize(newRect);
   }
 
   getResizeHandles = () => {
-    const { resizeMode } = this.state;
     return modes.map((mode, i) => {
       const alignProp = { [alignPropMap[mode]]: true };
       return (
@@ -170,7 +167,6 @@ class Resizable extends Component {
           key={i}
           ref={mode}
           mode={mode}
-          isActive={!resizeMode || resizeMode === mode}
           onResize={this.startResize}
         />
       );
