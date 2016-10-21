@@ -88,8 +88,25 @@ class Resizable extends Component {
     dx = ndx;
     dy = ndy;
 
+
+    // preserve ratio for corners or shiftKey
+    let preserveRatio = false;
+    if (e.shiftKey || (resizingVertically && resizingHorizontally)) {
+      preserveRatio = true;
+      if (resizeMode === MODES.TOP_RIGHT || resizeMode === MODES.LEFT || resizeMode === MODES.BOTTOM_LEFT) {
+        dy = -dx;
+      } else if (resizeMode === MODES.BOTTOM) {
+        dx = dy;
+      } else if (resizeMode === MODES.TOP) {
+        dx = -dy;
+      } else {
+        dy = dx;
+      }
+
+    }
+
     // find horizontal deltas
-    if (resizingHorizontally) {
+    if (resizingHorizontally || preserveRatio) {
       if ([MODES.TOP_LEFT, MODES.LEFT, MODES.BOTTOM_LEFT].indexOf(resizeMode) > -1) { // left side
         newRect.left += dx;
         newRect.width -= dx;
@@ -99,7 +116,7 @@ class Resizable extends Component {
     }
 
     // find vertical deltas
-    if (resizingVertically) {
+    if (resizingVertically || preserveRatio) {
       if ([MODES.TOP_LEFT, MODES.TOP, MODES.TOP_RIGHT].indexOf(resizeMode) > -1) { // top side
         newRect.top += dy;
         newRect.height -= dy;

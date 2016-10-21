@@ -13,8 +13,8 @@ class Rotatable extends Component {
   startRotate = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.startRect = this.props.getRect();
+    this.startOffset = this.root.getBoundingClientRect();
     document.addEventListener("mousemove", this.handleRotate);
     document.addEventListener("mouseup", this.stopRotate);
     document.addEventListener("touchmove", this.handleRotate);
@@ -33,20 +33,20 @@ class Rotatable extends Component {
   handleRotate = (e) => {
     // get mouse position
     const { x: mouseX, y: mouseY } = getEventCoordinates(e);
-    const { left, top, height, width } = this.startRect;
+    const { top, left, width, height } = this.startOffset;
 
     // find x/y distances between node center and mouse position
-    const diffX = mouseX - this.canvasPosition.left - left - (width / 2);
-    const diffY = mouseY - this.canvasPosition.top - top - (height / 2);
+    const diffX = mouseX - left - (width / 2);
+    const diffY = mouseY - top - (height / 2);
 
     // find angle between node center and mouse position and convert from radians to degrees
-    const angle = Math.round(Math.atan2(diffY, diffX) * 180 / Math.PI);
+    const angle = Math.round(Math.atan2(diffY, diffX) * 180 / Math.PI) + 90;
     this.props.onRotate(angle);
   }
 
   render() {
     return (
-      <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <div style={{ width: "100%", height: "100%", position: "relative" }} ref={el => this.root = el} >
         {this.props.children}
         {this.props.isSelected && (
           <div
