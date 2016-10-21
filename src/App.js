@@ -16,8 +16,6 @@ class App extends Component {
       }],
       selectedIndex: 0
     };
-
-    this.elementRefs = {};
   }
 
   handleResize = (newRect) => {
@@ -76,7 +74,6 @@ class App extends Component {
           }}
         >
           <CanvasElement
-            ref={(el) => { this.elementRefs[id] = el; }}
             getRect={() => n}
             isSelected={isSelected}
             onDrag={this.handleDrag}
