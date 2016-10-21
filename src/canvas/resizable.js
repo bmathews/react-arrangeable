@@ -33,7 +33,6 @@ class Resizable extends Component {
   startResize = (e, resizeMode) => {
     e.preventDefault();
     e.stopPropagation();
-    this.canvasPosition = document.getElementById("app").getBoundingClientRect();
     this.startMousePosition = getEventCoordinates(e);
     this.startRect = this.props.getRect();
     document.addEventListener("mousemove", this.handleMouseMove);
